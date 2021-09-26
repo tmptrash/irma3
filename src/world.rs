@@ -1,29 +1,35 @@
-/**
- * Structure of the world of dots/atoms/pixels
- */
+use std::mem;
+//
+//  One atom type. We use 2 bytes atom to store type, bounds, 
+//
+pub type Atom = u16;
+//
+// Structure of the world. It consists of cells and atoms inside them
+//
 pub struct World {
-    dots: Vec<u16> // linear array of dots
+    cells: Vec<Atom> // linear array of dots
 }
 
 impl World {
     pub fn new(len: usize) -> World {
-        let mut v = Vec::with_capacity(len);
-        unsafe { v.set_len(len) }
-        
+        let bytes = mem::size_of::<Atom>() * len;
+        let mut v = Vec::with_capacity(bytes);
+        unsafe { v.set_len(bytes) }
+
         World {
-            dots: v
+            cells: v
         }
     }
 
-    pub fn get_dot(&self, offs: usize) -> u16 {
-        self.dots[offs]
+    pub fn get_dot(&self, offs: usize) -> Atom {
+        self.cells[offs]
     }
 
-    pub fn set_dot(&mut self, offs: usize, dot: u16) {
-        self.dots[offs] = dot;
+    pub fn set_dot(&mut self, offs: usize, dot: Atom) {
+        self.cells[offs] = dot;
     }
 
     pub fn len(&self) -> usize {
-        self.dots.len()
+        self.cells.len()
     }
 }
