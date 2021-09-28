@@ -1,4 +1,6 @@
 use std::mem;
+use crate::utils;
+
 //
 //  One atom type. We use 2 bytes atom to store type, bounds, 
 //
@@ -12,10 +14,10 @@ pub struct World {
 
 impl World {
     pub fn new(len: usize) -> World {
-        let bytes = mem::size_of::<Atom>() * len;
-        let mut v = Vec::with_capacity(bytes);
-        unsafe { v.set_len(bytes) }
-
+        let mut v = utils::alloc(mem::size_of::<Atom>() * len);
+        for i in 0..len {
+            v[i] = 0 as Atom;
+        }
         World {
             cells: v
         }
