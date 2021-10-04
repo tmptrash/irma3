@@ -15,6 +15,10 @@ pub struct World {
 impl World {
     pub fn new(len: usize) -> World {
         let mut v = utils::alloc(mem::size_of::<Atom>() * len);
+        //
+        // This peace of code init memory and allocate it, because
+        // utils::alloc() doesn't really reserve the memory
+        //
         for i in 0..len {
             v[i] = 0 as Atom;
         }

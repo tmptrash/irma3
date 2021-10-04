@@ -8,3 +8,4 @@ authors = ["flatline <deadbrainman@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+getset = "0.1.1"
