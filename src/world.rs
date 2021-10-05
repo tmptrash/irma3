@@ -1,6 +1,5 @@
 use std::mem;
 use crate::utils;
-
 //
 //  One atom type. We use 2 bytes atom to store type, bounds, 
 //
@@ -13,17 +12,13 @@ pub struct World {
 }
 
 impl World {
+    //
+    // Creates new world of atoms
+    // @param len - amount of atoms in a world
+    //
     pub fn new(len: usize) -> World {
-        let mut v = utils::alloc(mem::size_of::<Atom>() * len);
-        //
-        // This peace of code init memory and allocate it, because
-        // utils::alloc() doesn't really reserve the memory
-        //
-        for i in 0..len {
-            v[i] = 0 as Atom;
-        }
         World {
-            cells: v
+            cells: utils::alloc(len, 0)
         }
     }
 

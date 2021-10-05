@@ -45,11 +45,10 @@ impl VM {
 }
 
 impl MoveBuffer {
-    pub fn new(max_mov_atoms: usize) -> MoveBuffer {
-        let bytes = max_mov_atoms * mem::size_of::<Atom>();
+    pub fn new(atoms: usize) -> MoveBuffer {
         MoveBuffer {
-            mov_buf: utils::alloc(bytes),
-            mov_stack: utils::alloc(bytes)
+            mov_buf: utils::alloc(atoms, 0),
+            mov_stack: utils::alloc(atoms, 0)
         }
     }
 }
