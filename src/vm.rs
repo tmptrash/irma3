@@ -47,8 +47,8 @@ impl VM {
 impl MoveBuffer {
     pub fn new(atoms: usize) -> MoveBuffer {
         MoveBuffer {
-            mov_buf: utils::alloc(atoms, 0),
-            mov_stack: utils::alloc(atoms, 0)
+            mov_buf: utils::alloc(atoms),
+            mov_stack: utils::alloc(atoms)
         }
     }
 }

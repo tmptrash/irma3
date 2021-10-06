@@ -17,8 +17,10 @@ impl World {
     // @param len - amount of atoms in a world
     //
     pub fn new(len: usize) -> World {
+        let mut mem = utils::alloc(len);
+        utils::zero(&mut mem, 0);
         World {
-            cells: utils::alloc(len, 0)
+            cells: mem
         }
     }
 
