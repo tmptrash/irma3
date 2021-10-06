@@ -6,12 +6,10 @@ pub fn alloc<T>(len: usize) -> Vec<T> {
     unsafe { v.set_len(len) }    
     v
 }
-
-pub fn zero<T>(vec: &mut Vec<T>, zero: T) where T: Copy {
-    //
-    // This peace of code init memory and allocate it, 
-    // because alloc() doesn't really reserve the memory
-    //
+//
+// Zeroes vector
+//
+pub fn zero<T: Copy>(vec: &mut Vec<T>, zero: T) {
     for i in 0..vec.len() {
         vec[i] = zero;
     }
