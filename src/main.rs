@@ -2,11 +2,12 @@ mod world;
 mod vm;
 mod cfg;
 mod utils;
+mod global;
 
 use std::io::stdin;
 use world::World;
 use vm::VM;
-use vm::MoveBuffer;
+use vm::buf::MoveBuffer;
 use cfg::Config;
 
 pub struct App {

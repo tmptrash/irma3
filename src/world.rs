@@ -1,9 +1,6 @@
 use std::mem;
 use crate::utils;
-//
-//  One atom type. We use 2 bytes atom to store type, bounds, 
-//
-pub type Atom = u16;
+use crate::global::Atom;
 //
 // Structure of the world. It consists of cells and atoms inside them
 //

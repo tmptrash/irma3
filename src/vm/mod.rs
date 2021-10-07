@@ -1,6 +1,8 @@
+pub mod buf;
+
 use crate::world::World;
-use crate::world::Atom;
-use crate::utils;
+use crate::global::Atom;
+use buf::MoveBuffer;
 
 pub struct VM {
     //
@@ -9,23 +11,6 @@ pub struct VM {
     energy: usize,
     buf: Box<MoveBuffer>,
     offs: usize
-}
-//
-// Buffer and stack of moving atoms, which are used for mov command. 
-// Depending on it's size we may move big or small molecules
-//
-pub struct MoveBuffer {
-    mov_buf: Vec<Atom>,
-    mov_stack: Vec<Atom>
-}
-
-impl MoveBuffer {
-    pub fn new(atoms: usize) -> MoveBuffer {
-        MoveBuffer {
-            mov_buf: utils::alloc(atoms),
-            mov_stack: utils::alloc(atoms)
-        }
-    }
 }
 
 impl VM {
@@ -36,9 +21,11 @@ impl VM {
             offs: 0
         }
     }
-
-    pub fn step() {
-
+    //
+    // Run one command/atom
+    //
+    pub fn step(&mut self, mut world: &World) {
+        let atom = world.get_dot(self.offs);
     }
 
     pub fn cmd_mov(&mut self, mut world: &World) {
