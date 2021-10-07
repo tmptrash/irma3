@@ -21,6 +21,11 @@ impl VM {
             offs: 0
         }
     }
+    pub fn create_vms(mov_buf_size: usize) -> Vec<VM> {
+        let buf = MoveBuffer::new(mov_buf_size);
+        // TODO:
+        vec![VM::new(Box::new(buf))]
+    }
     //
     // Run one command/atom
     //
