@@ -2,6 +2,7 @@ pub mod buf;
 
 use crate::world::World;
 use crate::global::Atom;
+use crate::utils;
 use buf::MoveBuffer;
 
 pub struct VM {
@@ -20,8 +21,9 @@ impl VM {
         }
     }
     pub fn create_vms(vm_amount: usize) -> Vec<VM> {
-        // TODO: should be only one MoveBuffer
-        vec![VM::new(), VM::new()]
+        let mut v: Vec<VM> = utils::alloc(vm_amount);
+        for i in 0..vm_amount { v.insert(i, VM::new()) }
+        v
     }
     //
     // Run one command/atom
