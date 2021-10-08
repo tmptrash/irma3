@@ -20,9 +20,10 @@ fn main() {
     // Global configuration. Must be singleton
     //
     let mut cfg = Config::new();
-    let app: App = App {
+    let mut buf = MoveBuffer::new(cfg.MOV_BUF_SIZE());
+    let mut app: App = App {
         world: World::new(cfg.WIDTH() * cfg.HEIGHT()),
-        vms: VM::create_vms(cfg.MOV_BUF_SIZE())
+        vms: VM::create_vms(cfg.VM_AMOUNT())
     };
     //
     // TODO: 
@@ -32,6 +33,10 @@ fn main() {
     println!("Allocated memory: {}. Value[{}]: {}", app.world.len(), index, app.world.get_dot(index));
     cfg.frame_delay = 123;
     println!("{}", cfg.frame_delay);
+    //
+    // TODO:
+    //
+    app.vms[0].step(&app.world, &buf);
 
     wait_key();
 }

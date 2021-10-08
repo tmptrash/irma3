@@ -9,31 +9,28 @@ pub struct VM {
     // Energy in current VM. Every VM may have it's own energy
     //
     energy: usize,
-    buf: Box<MoveBuffer>,
     offs: usize
 }
 
 impl VM {
-    pub fn new(buf: Box<MoveBuffer>) -> VM {
+    pub fn new() -> VM {
         VM {
             energy: 0,
-            buf: buf,
             offs: 0
         }
     }
-    pub fn create_vms(mov_buf_size: usize) -> Vec<VM> {
-        let buf = MoveBuffer::new(mov_buf_size);
-        // TODO:
-        vec![VM::new(Box::new(buf))]
+    pub fn create_vms(vm_amount: usize) -> Vec<VM> {
+        // TODO: should be only one MoveBuffer
+        vec![VM::new(), VM::new()]
     }
     //
     // Run one command/atom
     //
-    pub fn step(&mut self, mut world: &World) {
+    pub fn step(&mut self, mut world: &World, mut buf: &MoveBuffer) {
         let atom = world.get_dot(self.offs);
     }
 
-    pub fn cmd_mov(&mut self, mut world: &World) {
+    pub fn cmd_mov(&mut self, mut world: &World, mut buf: &MoveBuffer) {
 
     }
 

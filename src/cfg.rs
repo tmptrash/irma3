@@ -18,6 +18,10 @@ pub struct Config {
     //
     MOV_BUF_SIZE: usize,
     //
+    // Maximum amount of VMs in a system
+    //
+    VM_AMOUNT: usize,
+    //
     // Read-Write properties. Available through direct access
     // from every module
     //
@@ -30,6 +34,7 @@ impl Config {
             WIDTH: 1024,
             HEIGHT: 1024,
             MOV_BUF_SIZE: 1024,
+            VM_AMOUNT: 1024,
 
             frame_delay : 0
         }
