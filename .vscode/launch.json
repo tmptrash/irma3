@@ -20,7 +20,10 @@
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "sourceMap": {
+                "/rustc/c8dfcfe046a7680554bf4eb612bad840e7631c4b/": "${env:USERPROFILE}/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/src/rust"
+            }
         },
         {
             "type": "lldb",
