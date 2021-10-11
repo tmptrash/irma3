@@ -20,10 +20,9 @@ fn main() {
     // Global configuration. Must be singleton
     //
     let mut cfg = Config::new();
-    let mut buf = MoveBuffer::new(cfg.MOV_BUF_SIZE());
     let mut app: App = App {
         world: World::new(cfg.WIDTH() * cfg.HEIGHT()),
-        vms: VM::create_vms(cfg.VM_AMOUNT())
+        vms: VM::create_vms(cfg.VM_AMOUNT(), cfg.MOV_BUF_SIZE())
     };
     //
     // TODO: 
@@ -36,7 +35,7 @@ fn main() {
     //
     // TODO:
     //
-    app.vms[0].step(&app.world, &buf);
+    app.vms[0].step(&app.world);
 
     wait_key();
 }
