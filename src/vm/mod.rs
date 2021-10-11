@@ -4,7 +4,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use crate::world::World;
 use crate::global::Atom;
-use crate::utils;
 use buf::MoveBuffer;
 
 pub struct VM {
@@ -33,7 +32,7 @@ impl VM {
 
     pub fn create_vms(vm_amount: usize, buf_size: usize) -> Vec<VM> {
         let buf = Rc::new(RefCell::new(MoveBuffer::new(buf_size)));
-        let mut v: Vec<VM> = Vec::new(); //utils::alloc(vm_amount);
+        let mut v: Vec<VM> = Vec::new();
         for _i in 0..vm_amount {
             v.push(VM::new(buf.clone()));
         }
@@ -43,7 +42,7 @@ impl VM {
     // Run one command/atom
     //
     pub fn step(&mut self, mut world: &World) {
-        let atom = world.get_dot(self.offs);
+        let atom:Atom = world.get_dot(self.offs);
     }
 
     pub fn cmd_mov(&mut self, mut world: &World) {
