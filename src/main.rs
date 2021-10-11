@@ -7,7 +7,6 @@ mod global;
 use std::io::stdin;
 use world::World;
 use vm::VM;
-use vm::buf::MoveBuffer;
 use cfg::Config;
 
 pub struct App {
@@ -36,11 +35,4 @@ fn main() {
     // TODO:
     //
     app.vms[0].step(&app.world);
-
-    wait_key();
-}
-
-fn wait_key() {
-    let mut input_string = String::new();
-    stdin().read_line(&mut input_string);
 }
