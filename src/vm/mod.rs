@@ -32,7 +32,7 @@ impl VM {
 
     pub fn create_vms(vm_amount: usize, buf_size: usize) -> Vec<VM> {
         let buf = Rc::new(RefCell::new(MoveBuffer::new(buf_size)));
-        let mut v: Vec<VM> = Vec::new();
+        let mut v: Vec<VM> = Vec::with_capacity(vm_amount); 
         for _i in 0..vm_amount {
             v.push(VM::new(buf.clone()));
         }

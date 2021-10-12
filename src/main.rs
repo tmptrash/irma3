@@ -4,7 +4,6 @@ mod cfg;
 mod utils;
 mod global;
 
-use std::io::stdin;
 use world::World;
 use vm::VM;
 use cfg::Config;
