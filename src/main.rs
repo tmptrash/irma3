@@ -3,6 +3,7 @@ mod vm;
 mod cfg;
 mod utils;
 mod global;
+mod log;
 
 use world::World;
 use vm::VM;
