@@ -52,7 +52,7 @@ impl VM {
         let atom: Atom = world.get_dot(self.offs);
         let atom_type: usize = (atom & ATOM_TYPE_MASK).into();
         if atom_type >= ATOM_MAP.len() {
-            warn!("Invalid atom type. Atom - {}, type - {}", atom, atom_type);
+            warn!("Unsupported atom type. Offs: {}, Atom: {}, Type: {}", self.offs, atom, atom_type);
             return false;
         }
         ATOM_MAP[atom_type](self, world)
