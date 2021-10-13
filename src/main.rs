@@ -17,8 +17,8 @@ pub struct App {
 
 fn main() {
     //
-    // Init log system from %RUST_LOG% env var. Use SET RUST_LOG=info in
-    // terminal to set log level
+    // We use %RUST_LOG% to set log level. Use SET RUST_LOG=<level> in
+    // terminal to set log level. e.g. SET RUST_LOG=info
     //
     flexi_logger::Logger::try_with_env().unwrap().start().unwrap();
     //

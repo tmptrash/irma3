@@ -1,10 +1,16 @@
+//
+// Global configuration module. Is used to change config
+// on a fly. Some values are read only (they are in upper 
+// case), some read write (they are in lover case).
+//
 use getset::{CopyGetters, Getters};
 //
 // These annotations will create getters for readonly
-// fileds like WIDTH, HEIGHT,...
+// values like WIDTH, HEIGHT,...
 //
 #[derive(Getters, CopyGetters)]
 #[getset(get_copy = "pub")]
+#[allow(non_snake_case)]
 pub struct Config {
     //
     // Readonly properties. Available through getters
