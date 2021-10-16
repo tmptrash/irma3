@@ -1,4 +1,8 @@
-//
-//  One atom type. We use 2 bytes atom to store type, bounds, 
-//
-pub type Atom = u16;
+//!
+//!  Application wide definitions.
+//!
+///
+/// One atom type. We use 4 bytes atom to store type, VM direction bounds,
+/// and atom specific bits.
+/// 
+pub type Atom = u32;

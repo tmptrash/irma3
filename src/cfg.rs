@@ -1,8 +1,7 @@
-//
-// Global configuration module. Is used to change config
-// on a fly. Some values are read only (they are in upper 
-// case), some read write (they are in lover case).
-//
+//!
+//! Global configuration module. Is used to change config on a fly. Some values
+//! are read only (they are in upper case), some read write (they are in lover case).
+//!
 use getset::{CopyGetters, Getters};
 //
 // These annotations will create getters for readonly
@@ -12,25 +11,26 @@ use getset::{CopyGetters, Getters};
 #[getset(get_copy = "pub")]
 #[allow(non_snake_case)]
 pub struct Config {
-    //
-    // Readonly properties. Available through getters
-    //
+    ///
+    /// World width
+    ///
     WIDTH: usize,
+    ///
+    /// World height
+    /// 
     HEIGHT: usize,
-    //
-    // Size of moving buffers. We use these buffers in mov 
-    // command to move atoms. Their size mean amount of atoms 
-    // we may to move in one mov call
-    //
+    ///
+    /// Size of moving buffers. We use these buffers in mov command to move 
+    /// atoms. Their size mean amount of atoms we may to move in one mov call.
+    ///
     MOV_BUF_SIZE: usize,
-    //
-    // Maximum amount of VMs in a system
-    //
+    ///
+    /// Maximum amount of VMs in a system.
+    ///
     VM_AMOUNT: usize,
-    //
-    // Read-Write properties. Available through direct access
-    // from every module
-    //
+    ///
+    /// Read-Write properties. Available through direct access from every module.
+    ///
     pub frame_delay: u32
 }
 

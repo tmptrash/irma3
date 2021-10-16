@@ -1,17 +1,23 @@
+//!
+//! World module. Implements 2d world related stuff.
+//! 
 use crate::utils;
 use crate::global::Atom;
-//
-// Structure of the world. It consists of cells and atoms inside them
-//
+///
+/// Structure of the world. It consists of cells and atoms inside them
+///
 pub struct World {
-    cells: Vec<Atom> // linear array of dots
+    ///
+    /// linear array of dots
+    /// 
+    cells: Vec<Atom>
 }
 
 impl World {
-    //
-    // Creates new world of atoms
-    // @param len - amount of atoms in a world
-    //
+    ///
+    /// Creates new world of atoms
+    /// @param len - amount of atoms in a world
+    ///
     pub fn new(len: usize) -> World {
         let mut mem = utils::alloc(len);
         utils::zero(&mut mem, 0);
