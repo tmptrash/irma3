@@ -3,6 +3,7 @@
 //! 
 use crate::utils;
 use crate::global::Atom;
+use crate::global::ATOM_EMPTY;
 ///
 /// Structure of the world. It consists of cells and atoms inside them
 ///
@@ -10,7 +11,11 @@ pub struct World {
     ///
     /// linear array of dots
     /// 
-    cells: Vec<Atom>
+    cells: Vec<Atom>,
+    ///
+    /// Max amount of atoms in a world.
+    ///
+    size: usize
 }
 
 impl World {
@@ -18,15 +23,20 @@ impl World {
     /// Creates new world of atoms
     /// @param len - amount of atoms in a world
     ///
-    pub fn new(len: usize) -> World {
+    pub fn new(len: usize) -> Option<World> {
+        if len < 1 { return None }
         let mut mem = utils::alloc(len);
         utils::zero(&mut mem, 0);
-        World {
-            cells: mem
-        }
+        Some(
+            World {
+                cells: mem,
+                size: len
+            }
+        )
     }
 
     pub fn get_dot(&self, offs: usize) -> Atom {
+        if offs >= self.size { return ATOM_EMPTY }
         self.cells[offs]
     }
 

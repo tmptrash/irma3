@@ -29,6 +29,10 @@ pub struct Config {
     ///
     VM_AMOUNT: usize,
     ///
+    /// Map of offsets depending on directions.
+    /// 
+    DIR_TO_OFFS: [i32; 8],
+    ///
     /// Read-Write properties. Available through direct access from every module.
     ///
     pub frame_delay: u32
@@ -36,11 +40,14 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Config {
+        const width: usize = 1024;
+        const height: usize = 1024;
         Config {
-            WIDTH: 1024,
-            HEIGHT: 1024,
+            WIDTH: width,
+            HEIGHT: height,
             MOV_BUF_SIZE: 1024,
             VM_AMOUNT: 1024,
+            DIR_TO_OFFS: [-(width as i32), -(width as i32) + 1, 1, (width as i32) + 1, (width as i32), (width as i32) - 1, -1, -(width as i32) - 1],
 
             frame_delay : 0
         }

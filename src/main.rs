@@ -22,10 +22,10 @@ fn main() {
     info!("Welcome to irma4 - Atomic Artificial Life Simulator in Rust");
 
     let mut cfg = Config::new();                                                 // Global configuration. Must be a singleton
-    let mut world = World::new(cfg.WIDTH() * cfg.HEIGHT());
+    let mut world = World::new(cfg.WIDTH() * cfg.HEIGHT()).unwrap();
     let mut vms = VM::create_vms(cfg.VM_AMOUNT(), cfg.MOV_BUF_SIZE());
     //
     // TODO: 
     //
-    vms[0].step(&world);
+    vms[0].run_atom(&world, &cfg.DIR_TO_OFFS());
 }

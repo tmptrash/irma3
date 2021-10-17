@@ -3,7 +3,6 @@
 //! optimized for speed. There are many virtual machines in a world at the same time.
 //! One VM runs one molecule.
 //! 
-mod consts;
 pub mod buf;
 
 use std::rc::Rc;
@@ -13,11 +12,20 @@ use log::{*};
 use crate::world::World;
 use crate::global::Atom;
 use buf::MoveBuffer;
-use consts::{*};
+use crate::global::{*};
 //
 // map between atom type number and handler fn index. Should be in stack
 //
-const ATOM_MAP: &'static [fn(&mut VM, &World) -> bool] = &[VM::atom_mov, VM::atom_fix, VM::atom_spl, VM::atom_cond, VM::atom_job];
+const ATOM_MAP: &'static [fn(&mut VM, &World) -> bool] = &[
+    VM::atom_empty,  // must be an empty fn. Means empty cell or no atom
+    VM::atom_mov,
+    VM::atom_fix,
+    VM::atom_spl,
+    VM::atom_cond,
+    VM::atom_job,
+    VM::atom_empty,  // unused
+    VM::atom_empty   // unused
+];
 
 pub struct VM {
     ///
@@ -57,14 +65,17 @@ impl VM {
     /// Runs one atom depending on type and moves VM to the next one depending on
     /// atom direction.
     ///
-    pub fn step(&mut self, mut world: &World) -> bool {
+    pub fn run_atom(&mut self, mut world: &World, dir_to_offs: &[i32]) -> bool {
         let atom: Atom = world.get_dot(self.offs);
         let atom_type: usize = (atom & ATOM_TYPE_MASK >> ATOM_TYPE_SHIFT).try_into().unwrap();
+        if atom_type == ATOM_EMPTY as usize { return false }
 
-        if atom_type >= ATOM_MAP.len() {
-            warn!("Unsupported atom type. Offs: {}, Atom: {}, Type: {}", self.offs, atom, atom_type);
+        let dir = (atom & ATOM_DIR_MASK >> ATOM_DIR_SHIFT) as usize;
+        if dir >= dir_to_offs.len() {
+            warn!("Invalid direction. Offs: {}, Atom: {}, Dir: {}", self.offs, atom, dir);
             return false;
         }
+        self.offs += dir_to_offs[dir] as usize;
 
         ATOM_MAP[atom_type](self, world)
     }
@@ -99,4 +110,8 @@ impl VM {
     pub fn atom_job(&mut self, mut world: &World) -> bool {
         true
     }
+    ///
+    /// Just a stub for empty atom in a world
+    ///
+    fn atom_empty(&mut self, mut _world: &World) -> bool { true }
 }
