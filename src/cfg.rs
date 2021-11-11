@@ -20,7 +20,7 @@ pub struct Config {
     /// 
     HEIGHT: usize,
     ///
-    /// Size of moving buffers. We use these buffers in mov command to move 
+    /// Size of moving buffers. We use these buffers in mov command to move
     /// atoms. Their size mean amount of atoms we may to move in one mov call.
     ///
     MOV_BUF_SIZE: usize,

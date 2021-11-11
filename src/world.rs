@@ -41,6 +41,7 @@ impl World {
     }
 
     pub fn set_dot(&mut self, offs: usize, dot: Atom) {
+        if offs >= self.size { return }
         self.cells[offs] = dot;
     }
 

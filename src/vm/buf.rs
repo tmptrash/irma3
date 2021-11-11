@@ -10,8 +10,8 @@ use crate::global::Atom;
 /// command implementation for details.
 ///
 pub struct MoveBuffer {
-    buf: Vec<Atom>,
-    stack: Vec<Atom>
+    pub buf: Vec<Atom>,
+    pub stack: Vec<Atom>
 }
 
 impl MoveBuffer {

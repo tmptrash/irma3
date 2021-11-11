@@ -12,7 +12,9 @@ use flexi_logger;
 use log::{*};
 use world::World;
 use vm::VM;
+use vm::VMData;
 use cfg::Config;
+use vm::buf::MoveBuffer;
 ///
 /// Entry point of application. It creates global Configuration, World and list of VMs, logger
 /// and other components.
@@ -22,10 +24,14 @@ fn main() {
     info!("Welcome to irma4 - Atomic Artificial Life Simulator in Rust");
 
     let mut cfg = Config::new();                                                 // Global configuration. Must be a singleton
-    let mut world = World::new(cfg.WIDTH() * cfg.HEIGHT()).unwrap();
-    let mut vms = VM::create_vms(cfg.VM_AMOUNT(), cfg.MOV_BUF_SIZE());
+    let mut vm_data = VMData{
+        world: World::new(cfg.WIDTH() * cfg.HEIGHT()).unwrap(),
+        buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
+        dirs: cfg.DIR_TO_OFFS()
+    };
+    let mut vms = VM::create_vms(cfg.VM_AMOUNT());
     //
     // TODO: 
     //
-    vms[0].run_atom(&world, &cfg.DIR_TO_OFFS());
+    vms[0].run_atom(&mut vm_data);
 }
