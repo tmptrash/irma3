@@ -2,8 +2,8 @@
 //! A part of Virtual Machine module. Implements buffer, which is used for
 //! moving molecules. Buffer should be reused (singleton) in all VMs.
 //! 
+use std::collections::HashSet;
 use crate::utils;
-use crate::global::Atom;
 use crate::global::Offs;
 ///
 /// Means that stack has no elements in it.
@@ -24,8 +24,7 @@ pub struct Stack<T> {
 /// command implementation for details.
 ///
 pub struct MoveBuffer {
-    // TODO: hsould be HashSet
-    pub buf: Vec<Offs>,
+    pub buf: HashSet<Offs>,
     pub stack: Stack<Offs>
 }
 
@@ -75,7 +74,7 @@ impl MoveBuffer {
     ///
     pub fn new(size: usize) -> MoveBuffer {
         MoveBuffer {
-            buf: utils::alloc(size),
+            buf: HashSet::new(),
             stack: Stack::new(size)
         }
     }

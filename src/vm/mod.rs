@@ -97,6 +97,7 @@ impl VM {
     /// Implements mov command. It moves current atom and all binded atoms as well.
     ///
     pub fn atom_mov(&mut self, atom: Atom, vm_data: &mut  VMData) -> bool {
+        vm_data.buf.stack.reset();
         vm_data.buf.stack.push(self.offs);
         self.atom_mov_inner(vm_data, (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir)
     }
@@ -130,26 +131,36 @@ impl VM {
     ///
     fn atom_empty(&mut self, _atom: Atom, _vm_data: &mut VMData) -> bool { true }
     ///
-    /// This function rely that stack is not empty. check this before every call 
+    /// This function rely that stack is not empty. check this before every call
     ///
     fn atom_mov_inner(&mut self, vm_data: &mut VMData, dir: Dir) -> bool {
         let mut offs: Offs;
         let mut atom: Atom;
         let mut near_offs: Offs;
         let mut near_atom: Atom;
-        let mut stack = &mut vm_data.buf.stack;
+        let mut d_offs: Offs;
+        let stack = &mut vm_data.buf.stack;
+        let world = &mut vm_data.world;
+        let buf   = &mut vm_data.buf.buf;
+        let dirs  = &vm_data.dirs;
 
         while stack.not_empty() {
             offs = stack.last();
-            atom = vm_data.world.get_dot(offs);
-            near_offs = offs + vm_data.dirs[dir as usize] as usize;
-            near_atom = vm_data.world.get_dot(near_offs);
-            // impossible to move near, cause another atom is there, we have to move it first
+            atom = world.get_dot(offs);
+            near_offs = offs + dirs[dir as usize] as usize; // destination atom position
+            near_atom = world.get_dot(near_offs);
+            // Impossible to move near. Another atom is there, we have to move it first
             if is_atom(near_atom) { stack.push(near_offs); continue }
 
             stack.shrink();
-            vm_data.world.set_dot(near_offs, near_atom);
-            // TODO:
+            world.set_dot(near_offs, near_atom);
+            buf.insert(near_offs);
+
+            for d in 0..8 {
+                d_offs = offs + dirs[d] as Offs;
+                if buf.contains(&d_offs) { continue } // this atom has already moved
+                
+            }
         }
 
         true
