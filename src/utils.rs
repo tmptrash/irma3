@@ -1,6 +1,6 @@
 //!
 //! Global utilities module
-//! 
+//!
 ///
 /// Allocates memory to specified size in bytes.
 ///

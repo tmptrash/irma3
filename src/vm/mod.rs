@@ -4,13 +4,16 @@
 //! One VM runs one molecule.
 //! 
 pub mod buf;
+pub mod atom;
 
 use std::convert::TryInto;
 use log::{*};
 use crate::world::World;
 use crate::global::Atom;
 use buf::MoveBuffer;
+use atom::{*};
 use crate::global::{*};
+use crate::utils;
 //
 // map between atom type number and handler fn index. Should be in stack
 //
@@ -35,7 +38,7 @@ pub struct VM {
     ///
     /// Offset of current atom, which VM in running.
     ///
-    offs: usize
+    offs: Offs
 }
 ///
 /// Data needed for VM to work. Should be set from outside of VM
@@ -78,24 +81,24 @@ impl VM {
     ///
     pub fn run_atom(&mut self, vm_data: &mut VMData) -> bool {
         let atom: Atom = vm_data.world.get_dot(self.offs);
-        let atom_type: usize = (atom & ATOM_TYPE_MASK >> ATOM_TYPE_SHIFT).try_into().unwrap();
-        if atom_type == ATOM_EMPTY as usize { return false }
+        let atom_type = get_type(atom);
+        if atom_type == ATOM_EMPTY { return false }
 
-        let dir = (atom & ATOM_DIR_MASK >> ATOM_DIR_SHIFT) as usize;
-        if dir >= vm_data.dirs.len() {
+        let dir = get_vm_dir(atom);
+        if dir >= vm_data.dirs.len() as Dir {
             warn!("Invalid direction. Offs: {}, Atom: {}, Dir: {}", self.offs, atom, dir);
             return false;
         }
-        self.offs += vm_data.dirs[dir] as usize;
+        self.offs += vm_data.dirs[dir as usize] as usize;
 
-        ATOM_MAP[atom_type](self, atom, vm_data)
+        ATOM_MAP[atom_type as usize](self, atom, vm_data)
     }
     ///
     /// Implements mov command. It moves current atom and all binded atoms as well.
     ///
     pub fn atom_mov(&mut self, atom: Atom, vm_data: &mut  VMData) -> bool {
-        vm_data.buf.stack.push(atom);
-        true
+        vm_data.buf.stack.push(self.offs);
+        self.atom_mov_inner(vm_data, (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir)
     }
     ///
     /// Implements fix command. Creates bond between two atoms. Consumes energy.
@@ -126,10 +129,27 @@ impl VM {
     /// Just a stub for empty atom in a world
     ///
     fn atom_empty(&mut self, _atom: Atom, _vm_data: &mut VMData) -> bool { true }
+    ///
+    /// This function rely that stack is not empty. check this before every call 
+    ///
+    fn atom_mov_inner(&mut self, vm_data: &mut VMData, dir: Dir) -> bool {
+        let mut offs: Offs;
+        let mut atom: Atom;
+        let mut near_offs: Offs;
+        let mut near_atom: Atom;
+        let mut stack = &mut vm_data.buf.stack;
 
-    fn atom_mov_inner(&mut self, mut vm_data: &VMData) -> bool {
-        for atom in vm_data.buf.stack.iter().rev() {
-            // get
+        while stack.not_empty() {
+            offs = stack.last();
+            atom = vm_data.world.get_dot(offs);
+            near_offs = offs + vm_data.dirs[dir as usize] as usize;
+            near_atom = vm_data.world.get_dot(near_offs);
+            // impossible to move near, cause another atom is there, we have to move it first
+            if is_atom(near_atom) { stack.push(near_offs); continue }
+
+            stack.shrink();
+            vm_data.world.set_dot(near_offs, near_atom);
+            // TODO:
         }
 
         true

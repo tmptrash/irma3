@@ -3,6 +3,7 @@
 //! 
 use crate::utils;
 use crate::global::Atom;
+use crate::global::Offs;
 use crate::global::ATOM_EMPTY;
 ///
 /// Structure of the world. It consists of cells and atoms inside them
@@ -35,12 +36,12 @@ impl World {
         )
     }
 
-    pub fn get_dot(&self, offs: usize) -> Atom {
+    pub fn get_dot(&self, offs: Offs) -> Atom {
         if offs >= self.size { return ATOM_EMPTY }
         self.cells[offs]
     }
 
-    pub fn set_dot(&mut self, offs: usize, dot: Atom) {
+    pub fn set_dot(&mut self, offs: Offs, dot: Atom) {
         if offs >= self.size { return }
         self.cells[offs] = dot;
     }
