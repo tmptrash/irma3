@@ -97,7 +97,8 @@ impl VM {
     /// Implements mov command. It moves current atom and all binded atoms as well.
     ///
     pub fn atom_mov(&mut self, atom: Atom, vm_data: &mut  VMData) -> bool {
-        vm_data.buf.stack.reset();
+        vm_data.buf.stack.clear();
+        vm_data.buf.buf.clear();
         vm_data.buf.stack.push(self.offs);
         self.atom_mov_inner(vm_data, (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir)
     }
@@ -159,7 +160,7 @@ impl VM {
             for d in 0..8 {
                 d_offs = offs + dirs[d] as Offs;
                 if buf.contains(&d_offs) { continue } // this atom has already moved
-                
+                World::is_near(offs, d_offs, world.width);
             }
         }
 

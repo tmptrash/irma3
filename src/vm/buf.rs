@@ -28,7 +28,7 @@ pub struct MoveBuffer {
     pub stack: Stack<Offs>
 }
 
-impl Stack<usize> {
+impl Stack<Offs> {
     pub fn new(size: usize) -> Stack<Offs> {
         Stack {
             data: utils::alloc(size),
@@ -60,7 +60,7 @@ impl Stack<usize> {
     ///
     /// Fast reset of stack by moving index to the beginning
     ///
-    pub fn reset(&mut self) { self.idx = STACK_EMPTY }
+    pub fn clear(&mut self) { self.idx = STACK_EMPTY }
     ///
     /// Returns true, if stack contains at least one atom
     ///

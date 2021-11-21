@@ -25,7 +25,7 @@ fn main() {
 
     let mut cfg = Config::new();                                                 // Global configuration. Must be a singleton
     let mut vm_data = VMData{                                                    // Only one instance of this struct must exist
-        world: World::new(cfg.WIDTH() * cfg.HEIGHT()).unwrap(),
+        world: World::new(cfg.WIDTH(), cfg.HEIGHT()).unwrap(),
         buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
         dirs: cfg.DIR_TO_OFFS()
     };
