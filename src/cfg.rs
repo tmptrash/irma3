@@ -3,6 +3,8 @@
 //! are read only (they are in upper case), some read write (they are in lover case).
 //!
 use getset::{CopyGetters, Getters};
+use crate::global::Dir;
+use crate::global::DIRS_LEN;
 //
 // These annotations will create getters for readonly
 // values like WIDTH, HEIGHT,...
@@ -30,8 +32,11 @@ pub struct Config {
     VM_AMOUNT: usize,
     ///
     /// Map of offsets depending on directions.
+    /// 0 1 2
+    /// 7 X 3
+    /// 6 5 4
     /// 
-    DIR_TO_OFFS: [i32; 8],
+    DIR_TO_OFFS: [i32; DIRS_LEN],
     ///
     /// Read-Write properties. Available through direct access from every module.
     ///
@@ -43,12 +48,13 @@ impl Config {
         const width: usize = 1024;
         const height: usize = 1024;
         Config {
+            // read only configuration
             WIDTH: width,
             HEIGHT: height,
             MOV_BUF_SIZE: 1024,
             VM_AMOUNT: 1024,
-            DIR_TO_OFFS: [-(width as i32), -(width as i32) + 1, 1, (width as i32) + 1, (width as i32), (width as i32) - 1, -1, -(width as i32) - 1],
-
+            DIR_TO_OFFS: [-(width as i32) - 1, -(width as i32), -(width as i32) + 1, 1, (width as i32) + 1, (width as i32), (width as i32) - 1, -1],
+            // read-write configuration
             frame_delay : 0
         }
     }

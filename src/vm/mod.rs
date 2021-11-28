@@ -17,7 +17,7 @@ use crate::utils;
 //
 // map between atom type number and handler fn index. Should be in stack
 //
-const ATOM_MAP: &'static [fn(&mut VM, Atom, &mut VMData) -> bool] = &[
+const ATOMS_MAP: &'static [fn(&mut VM, Atom, &mut VMData) -> bool] = &[
     VM::atom_empty,  // must be an empty fn. Means empty cell or no atom
     VM::atom_mov,
     VM::atom_fix,
@@ -53,9 +53,9 @@ pub struct VMData {
     ///
     pub buf: MoveBuffer,
     ///
-    /// All possible directions of nearest atoms
+    /// Reverted directions, which is used in mov atom
     ///
-    pub dirs: [i32; 8]
+    pub dirs_rev: [Dir; DIRS_LEN]
 }
 
 impl VM {
@@ -85,22 +85,62 @@ impl VM {
         if atom_type == ATOM_EMPTY { return false }
 
         let dir = get_vm_dir(atom);
-        if dir >= vm_data.dirs.len() as Dir {
+        if dir >= vm_data.world.dirs.len() as Dir {
             warn!("Invalid direction. Offs: {}, Atom: {}, Dir: {}", self.offs, atom, dir);
             return false;
         }
-        self.offs += vm_data.dirs[dir as usize] as usize;
+        self.offs = vm_data.world.get_offs(self.offs, dir);
 
-        ATOM_MAP[atom_type as usize](self, atom, vm_data)
+        ATOMS_MAP[atom_type as usize](self, atom, vm_data)
     }
     ///
-    /// Implements mov command. It moves current atom and all binded atoms as well.
+    /// Implements mov command. It moves current atom and all binded atoms together.
+    /// Should be optimized by speed. After moving all bonds should not be broken.
     ///
-    pub fn atom_mov(&mut self, atom: Atom, vm_data: &mut  VMData) -> bool {
-        vm_data.buf.stack.clear();
-        vm_data.buf.buf.clear();
-        vm_data.buf.stack.push(self.offs);
-        self.atom_mov_inner(vm_data, (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir)
+    pub fn atom_mov(&mut self, atom: Atom, vm_data: &mut VMData) -> bool {
+        let mut offs: Offs;
+        let mut atom: Atom;
+        let mut to_offs: Offs;
+        let mut to_atom: Atom;
+        let mut d_offs: Offs;
+        let dir = (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir;
+        let stack = &mut vm_data.buf.stack;
+        let world = &mut vm_data.world;
+        let buf   = &mut vm_data.buf.buf;
+        let world_width = world.width;
+
+        stack.clear();                                            // every call of mov should reset stack & buf
+        buf.clear();
+        stack.push(self.offs);
+
+        while stack.not_empty() {                                 // before while, stack should have >= 1 atom
+            offs = stack.last();
+            atom = world.get_dot(offs);                           // atom we have to move
+            to_offs = world.get_offs(offs, dir);                  // destination atom position
+            to_atom = world.get_dot(to_offs);
+            if is_atom(to_atom) { stack.push(to_offs); continue } // can't move atom. Another one is there
+
+            stack.shrink();
+            world.mov_dot(offs, to_offs, atom);
+            buf.insert(to_offs);
+
+            for d in 0..DIRS_LEN as Dir {
+                d_offs = world.get_offs(offs, d);
+                if buf.contains(&d_offs) { continue }             // this atom has already moved
+                
+                if get_vm_dir(atom) == d {                        // update moved atom's bond
+                }
+                if World::is_near(to_offs, d_offs, world_width) {
+                    // TODO: check dir of d_atom and atom
+                    let d_atom = set_vm_dir(world.get_dot(d_offs), );
+                    world.set_dot(d_offs, d_atom);
+                } else {
+                    stack.push(d_offs);
+                }
+            }
+        }
+
+        true
     }
     ///
     /// Implements fix command. Creates bond between two atoms. Consumes energy.
@@ -131,39 +171,4 @@ impl VM {
     /// Just a stub for empty atom in a world
     ///
     fn atom_empty(&mut self, _atom: Atom, _vm_data: &mut VMData) -> bool { true }
-    ///
-    /// This function rely that stack is not empty. check this before every call
-    ///
-    fn atom_mov_inner(&mut self, vm_data: &mut VMData, dir: Dir) -> bool {
-        let mut offs: Offs;
-        let mut atom: Atom;
-        let mut near_offs: Offs;
-        let mut near_atom: Atom;
-        let mut d_offs: Offs;
-        let stack = &mut vm_data.buf.stack;
-        let world = &mut vm_data.world;
-        let buf   = &mut vm_data.buf.buf;
-        let dirs  = &vm_data.dirs;
-
-        while stack.not_empty() {
-            offs = stack.last();
-            atom = world.get_dot(offs);
-            near_offs = offs + dirs[dir as usize] as usize; // destination atom position
-            near_atom = world.get_dot(near_offs);
-            // Impossible to move near. Another atom is there, we have to move it first
-            if is_atom(near_atom) { stack.push(near_offs); continue }
-
-            stack.shrink();
-            world.set_dot(near_offs, near_atom);
-            buf.insert(near_offs);
-
-            for d in 0..8 {
-                d_offs = offs + dirs[d] as Offs;
-                if buf.contains(&d_offs) { continue } // this atom has already moved
-                World::is_near(offs, d_offs, world.width);
-            }
-        }
-
-        true
-    }
 }

@@ -15,6 +15,7 @@ use vm::VM;
 use vm::VMData;
 use cfg::Config;
 use vm::buf::MoveBuffer;
+use global::DIR_REV;
 ///
 /// Entry point of application. It creates global Configuration, World and list of VMs, logger
 /// and other components.
@@ -25,13 +26,13 @@ fn main() {
 
     let mut cfg = Config::new();                                                 // Global configuration. Must be a singleton
     let mut vm_data = VMData{                                                    // Only one instance of this struct must exist
-        world: World::new(cfg.WIDTH(), cfg.HEIGHT()).unwrap(),
+        world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
         buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
-        dirs: cfg.DIR_TO_OFFS()
+        dirs_rev: DIR_REV
     };
     let mut vms = VM::create_vms(cfg.VM_AMOUNT());
     //
-    // TODO: 
+    // TODO: should be a loop over VMs
     //
     vms[0].run_atom(&mut vm_data);
 }
