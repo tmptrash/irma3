@@ -126,32 +126,33 @@ impl VM {
             stack.shrink();                                               // destination cell is empty, can move there
             world.mov_dot(offs, to_offs, atom);                           // move atom physically
             buf.insert(to_offs);                                          // mark atom as "already moved"
-                                                                          // update bonds of moved atom--------------------
+            // update bonds of moved atom-----------------------------------------------------------------------------------
             d0 = get_vm_dir(atom);                                        // get VM dir of moved atom
             d1 = DIR_MOV_ATOM[d0 as I][dir as I];                         // final dir of moved atom
             if d1 == DIR_NO { buf.insert(world.get_offs(offs, d0)); }     // near atom is to far, will add it later
             else { set_vm_dir(atom, d1); }                                // distance between atoms is 1. update bond
-                                                                          // update bonds of near atom---------------------
+            // update bonds of near atom------------------------------------------------------------------------------------
             d0 = DIR_REV[d0 as I];                                        // get near atom's dir to moved atom
             d1 = DIR_NEAR_ATOM[d0 as I][dir as I];                        // final dir of near atom
             if d1 != DIR_NO { set_vm_dir(atom, d1); }                     // distance between atoms is 1. update bond
 
             if get_type(atom) == ATOM_IF {                                // if atom has second (else) and third (then) dirs
+                // update bonds of moved atom-------------------------------------------------------------------------------
                 d0 = get_if_dir(atom);                                    // get if dir of moved atom
                 d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of if moved atom
                 if d1 == DIR_NO { buf.insert(world.get_offs(offs, d0)); } // near atom is to far, will add it later
                 else { set_if_dir(atom, d1); }                            // distance between atoms is 1. update bond
-
+                // update bonds of near atom--------------------------------------------------------------------------------
                 a = world.get_dot(world.get_offs(offs, d0));              // get near atom
                 d0 = DIR_REV[d0 as I];                                    // get near atom's dir to moved atom
                 d1 = DIR_NEAR_ATOM[d0 as I][dir as I];                    // final dir of near atom
                 if d1 != DIR_NO { set_if_dir(a, d1); }                    // distance between atoms is 1. update bond
-
+                // update bonds of moved atom-------------------------------------------------------------------------------
                 d0 = get_then_dir(atom);                                  // get if dir of moved atom
                 d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of if moved atom
                 if d1 == DIR_NO { buf.insert(world.get_offs(offs, d0)); } // near atom is to far, will add it later
                 else { set_then_dir(atom, d1); }                          // distance between atoms is 1. update bond
-
+                // update bonds of near atom--------------------------------------------------------------------------------
                 d0 = DIR_REV[d0 as I];                                    // get near atom's dir to moved atom
                 d1 = DIR_NEAR_ATOM[d0 as I][dir as I];                    // final dir of near atom
                 if d1 != DIR_NO { set_then_dir(a, d1); }                  // distance between atoms is 1. update bond
