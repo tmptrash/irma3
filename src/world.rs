@@ -9,6 +9,7 @@ use crate::global::Offs;
 use crate::global::Dir;
 use crate::global::ATOM_EMPTY;
 use crate::global::DIRS_LEN;
+use crate::global::I;
 ///
 /// Structure of the world. It consists of cells and atoms inside them
 ///
@@ -83,7 +84,7 @@ impl World {
     /// Returns new offset by start offset and direction
     ///
     pub fn get_offs(&self, offs: Offs, dir: Dir) -> Offs {
-        let offs = offs + self.dirs[dir as usize] as Offs;
+        let offs = offs + self.dirs[dir as I] as Offs;
         if offs < 0 { return self.size as Offs - 1 }
         else if offs >= self.size as Offs { return 0 }
         offs
@@ -91,17 +92,17 @@ impl World {
 
     pub fn get_dot(&self, offs: Offs) -> Atom {
         if offs >= self.size as Offs { return ATOM_EMPTY }
-        self.cells[offs as usize]
+        self.cells[offs as I]
     }
 
     pub fn set_dot(&mut self, offs: Offs, dot: Atom) {
         if offs >= self.size as Offs { return }
-        self.cells[offs as usize] = dot;
+        self.cells[offs as I] = dot;
     }
 
     pub fn mov_dot(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom) {
         if dest_offs >= self.size as Offs { return }
-        self.cells[dest_offs as usize] = dot;
-        self.cells[src_offs as usize] = ATOM_EMPTY;
+        self.cells[dest_offs as I] = dot;
+        self.cells[src_offs as I] = ATOM_EMPTY;
     }
 }

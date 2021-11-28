@@ -17,6 +17,20 @@ pub fn get_vm_dir(atom: Atom) -> Dir { (atom & ATOM_DIR_MASK >> ATOM_DIR_SHIFT) 
 ///
 /// Sets new atom direction. All other bits keep the same
 ///
-pub fn set_vm_dir(atom: Atom, dir: Dir) -> Atom {
-    (atom & ATOM_DIR_UNMASK) | ((dir as Atom) << ATOM_DIR_SHIFT)
-}
+pub fn set_vm_dir(atom: Atom, dir: Dir) -> Atom { (atom & ATOM_DIR_UNMASK) | ((dir as Atom) << ATOM_DIR_SHIFT) }
+///
+/// Returns if atom direction
+///
+pub fn get_if_dir(atom: Atom) -> Dir { (atom & ATOM_IF_MASK >> ATOM_IF_SHIFT) as Dir }
+///
+/// Sets if atom direction. All other bits keep the same
+///
+pub fn set_if_dir(atom: Atom, dir: Dir) -> Atom { (atom & ATOM_IF_UNMASK) | ((dir as Atom) << ATOM_IF_SHIFT) }
+///
+/// Returns then atom direction
+///
+pub fn get_then_dir(atom: Atom) -> Dir { (atom & ATOM_IF_MASK >> ATOM_IF_SHIFT) as Dir }
+///
+/// Sets then atom direction. All other bits keep the same
+///
+pub fn set_then_dir(atom: Atom, dir: Dir) -> Atom { (atom & ATOM_IF_UNMASK) | ((dir as Atom) << ATOM_IF_SHIFT) }

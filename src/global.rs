@@ -3,6 +3,10 @@
 //! in every module
 //!
 ///
+/// Alias for usize to have short version of [i as I] instead [i as usize]
+/// 
+pub type I = usize;
+///
 /// One atom type. We use 2 bytes atom to store type, VM move direction (bound),
 /// and atom type specific bits.
 ///
@@ -38,7 +42,7 @@ pub const ATOM_TYPE_MASK:     Atom = 0b11100000_00000000;
 ///
 /// Amount of bits we have to shift righ to get atom type.
 ///
-pub const ATOM_TYPE_SHIFT:    Atom = 29;
+pub const ATOM_TYPE_SHIFT:    Atom = 13;
 ///
 /// We use 2..4 bits for VM run direction.
 ///
@@ -50,15 +54,31 @@ pub const ATOM_DIR_UNMASK:    Atom = 0b11100011_11111111;
 ///
 /// Amount of bits we have to shift righ to get atom direction.
 ///
-pub const ATOM_DIR_SHIFT:     Atom = 26;
+pub const ATOM_DIR_SHIFT:     Atom = 10;
 ///
 /// We use 6..8 bits for if direction (if atom).
 ///
 pub const ATOM_IF_MASK:       Atom = 0b00000011_10000000;
 ///
+/// Amount of bits we have to shift righ to get atom if direction.
+///
+pub const ATOM_IF_SHIFT:      Atom = 7;
+///
+/// Mask to reset if direction bits
+///
+pub const ATOM_IF_UNMASK:     Atom = 0b11111100_01111111;
+///
 /// We use 6..8 bits for if direction (if atom).
 ///
 pub const ATOM_THEN_MASK:     Atom = 0b00000000_01110000;
+///
+/// Amount of bits we have to shift righ to get atom then direction.
+///
+pub const ATOM_THEN_SHIFT:    Atom = 4;
+///
+/// Mask to reset then direction bits
+///
+pub const ATOM_THEN_UNMASK:   Atom = 0b11111111_10001111;
 ///
 /// We use 6..8 bits for direction in mov atom type
 ///
