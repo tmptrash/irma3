@@ -108,7 +108,7 @@ impl VM {
         let mut a: Atom;
         let dir = (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir;
         let stack = &mut vm_data.buf.stack;
-        let world = &mut vm_data.world;
+        let wrld  = &mut vm_data.world;
         let buf   = &mut vm_data.buf.buf;
 
         stack.clear();                                                    // every call of mov should reset stack & buf
@@ -116,41 +116,47 @@ impl VM {
         stack.push(self.offs);
 
         while stack.not_empty() {                                         // before while, stack should have >= 1 atoms
-            offs = stack.last();
-            atom = world.get_dot(offs);                                   // atom we have to move
-            to_offs = world.get_offs(offs, dir);                          // destination atom position
-            if is_atom(world.get_dot(to_offs)) {                          // can't move atom. Another one is there
+            offs = stack.last();                                          // offset of atom before move
+            atom = wrld.get_dot(offs);                                    // atom we have to move
+            to_offs = wrld.get_offs(offs, dir);                           // destination atom position
+            if is_atom(wrld.get_dot(to_offs)) {                           // can't move atom. Another one is there
                 stack.push(to_offs);
                 continue;
             }
             stack.shrink();                                               // destination cell is empty, can move there
-            world.mov_dot(offs, to_offs, atom);                           // move atom physically
+            wrld.mov_dot(offs, to_offs, atom);                            // move atom physically
             buf.insert(to_offs);                                          // mark atom as "already moved"
-            // update bonds of moved atom-----------------------------------------------------------------------------------
+            // update vm bond of moved atom---------------------------------------------------------------------------------
             d0 = get_vm_dir(atom);                                        // get VM dir of moved atom
             d1 = DIR_MOV_ATOM[d0 as I][dir as I];                         // final dir of moved atom
-            if d1 == DIR_NO { buf.insert(world.get_offs(offs, d0)); }     // near atom is to far, will add it later
-            else { set_vm_dir(atom, d1); }                                // distance between atoms is 1. update bond
-            // update bonds of near atom------------------------------------------------------------------------------------
-            d0 = DIR_REV[d0 as I];                                        // get near atom's dir to moved atom
-            d1 = DIR_NEAR_ATOM[d0 as I][dir as I];                        // final dir of near atom
-            if d1 != DIR_NO { set_vm_dir(atom, d1); }                     // distance between atoms is 1. update bond
+            if d1 == DIR_NO { buf.insert(wrld.get_offs(offs, d0)); }      // near atom is to far, will add it later
+            else {
+                set_vm_dir(atom, d1);                                     // distance between atoms is 1. update bond
+                // update vm bond of near atom------------------------------------------------------------------------------
+                d0 = DIR_REV[d0 as I];                                    // get near atom's dir to moved atom
+                if get_vm_dir(atom) == d0 {                               // near atom has a bond with moved
+                    d1 = DIR_NEAR_ATOM[d0 as I][dir as I];                // final dir of near atom
+                    if d1 != DIR_NO {                                     // distance between atoms is 1. update bond
+                        set_vm_dir(wrld.get_dot(wrld.get_offs(offs, d0)), d1);
+                    }
+                }
+            }
 
-            if get_type(atom) == ATOM_IF {                                // if atom has second (else) and third (then) dirs
+            if get_type(atom) == ATOM_IF {                                // if atom has additional else and then bonds
                 // update bonds of moved atom-------------------------------------------------------------------------------
                 d0 = get_if_dir(atom);                                    // get if dir of moved atom
                 d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of if moved atom
-                if d1 == DIR_NO { buf.insert(world.get_offs(offs, d0)); } // near atom is to far, will add it later
+                if d1 == DIR_NO { buf.insert(wrld.get_offs(offs, d0)); }  // near atom is to far, will add it later
                 else { set_if_dir(atom, d1); }                            // distance between atoms is 1. update bond
                 // update bonds of near atom--------------------------------------------------------------------------------
-                a = world.get_dot(world.get_offs(offs, d0));              // get near atom
+                a = wrld.get_dot(wrld.get_offs(offs, d0));                // get near atom
                 d0 = DIR_REV[d0 as I];                                    // get near atom's dir to moved atom
                 d1 = DIR_NEAR_ATOM[d0 as I][dir as I];                    // final dir of near atom
                 if d1 != DIR_NO { set_if_dir(a, d1); }                    // distance between atoms is 1. update bond
                 // update bonds of moved atom-------------------------------------------------------------------------------
                 d0 = get_then_dir(atom);                                  // get if dir of moved atom
                 d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of if moved atom
-                if d1 == DIR_NO { buf.insert(world.get_offs(offs, d0)); } // near atom is to far, will add it later
+                if d1 == DIR_NO { buf.insert(wrld.get_offs(offs, d0)); }  // near atom is to far, will add it later
                 else { set_then_dir(atom, d1); }                          // distance between atoms is 1. update bond
                 // update bonds of near atom--------------------------------------------------------------------------------
                 d0 = DIR_REV[d0 as I];                                    // get near atom's dir to moved atom

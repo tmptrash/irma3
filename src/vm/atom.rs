@@ -29,8 +29,8 @@ pub fn set_if_dir(atom: Atom, dir: Dir) -> Atom { (atom & ATOM_IF_UNMASK) | ((di
 ///
 /// Returns then atom direction
 ///
-pub fn get_then_dir(atom: Atom) -> Dir { (atom & ATOM_IF_MASK >> ATOM_IF_SHIFT) as Dir }
+pub fn get_then_dir(atom: Atom) -> Dir { (atom & ATOM_THEN_MASK >> ATOM_THEN_SHIFT) as Dir }
 ///
 /// Sets then atom direction. All other bits keep the same
 ///
-pub fn set_then_dir(atom: Atom, dir: Dir) -> Atom { (atom & ATOM_IF_UNMASK) | ((dir as Atom) << ATOM_IF_SHIFT) }
+pub fn set_then_dir(atom: Atom, dir: Dir) -> Atom { (atom & ATOM_THEN_UNMASK) | ((dir as Atom) << ATOM_THEN_SHIFT) }
