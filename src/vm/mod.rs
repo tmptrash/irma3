@@ -106,7 +106,8 @@ impl VM {
         let mut d0: Dir;
         let mut d1: Dir;
         let mut a: Atom;
-        let dir = (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir;
+        let mut o: Offs;
+        let dir = (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir;     // atom move direction
         let stack = &mut vm_data.buf.stack;
         let wrld  = &mut vm_data.world;
         let buf   = &mut vm_data.buf.buf;
@@ -129,19 +130,21 @@ impl VM {
             // update vm bond of moved atom---------------------------------------------------------------------------------
             d0 = get_vm_dir(atom);                                        // get VM dir of moved atom
             d1 = DIR_MOV_ATOM[d0 as I][dir as I];                         // final dir of moved atom
-            if d1 == DIR_NO { buf.insert(wrld.get_offs(offs, d0)); }      // near atom is to far, will add it later
+            o = wrld.get_offs(offs, d0);                                  // offs of near atom
+            if d1 == DIR_NO { buf.insert(o); }                            // near atom is to far, will add it later
             else {
                 set_vm_dir(atom, d1);                                     // distance between atoms is 1. update bond
+                wrld.set_dot(to_offs, atom);
                 // update vm bond of near atom------------------------------------------------------------------------------
                 d0 = DIR_REV[d0 as I];                                    // get near atom's dir to moved atom
-                if get_vm_dir(atom) == d0 {                               // near atom has a bond with moved
+                a = wrld.get_dot(o);                                      // near atom
+                if get_vm_dir(a) == d0 {                                  // near atom has a bond with moved
                     d1 = DIR_NEAR_ATOM[d0 as I][dir as I];                // final dir of near atom
-                    if d1 != DIR_NO {                                     // distance between atoms is 1. update bond
-                        set_vm_dir(wrld.get_dot(wrld.get_offs(offs, d0)), d1);
-                    }
+                    set_vm_dir(a, d1);
+                    wrld.set_dot(o, a);
                 }
             }
-
+            // TODO: start refactoring from here
             if get_type(atom) == ATOM_IF {                                // if atom has additional else and then bonds
                 // update bonds of moved atom-------------------------------------------------------------------------------
                 d0 = get_if_dir(atom);                                    // get if dir of moved atom
