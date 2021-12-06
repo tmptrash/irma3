@@ -34,59 +34,83 @@ pub const DIR_NO: Dir = Dir::MAX;
 ///
 /// Empty atom. Means that current cell is empty
 ///
-pub const ATOM_EMPTY:         Atom = 0;
+pub const ATOM_EMPTY:          Atom = 0;
 ///
 /// We use 0..1 bits for atom type.
 ///
-pub const ATOM_TYPE_MASK:     Atom = 0b11100000_00000000;
+pub const ATOM_TYPE_MASK:      Atom = 0b11100000_00000000;
 ///
 /// Amount of bits we have to shift righ to get atom type.
 ///
-pub const ATOM_TYPE_SHIFT:    Atom = 13;
+pub const ATOM_TYPE_SHIFT:     Atom = 13;
 ///
 /// We use 2..4 bits for VM run direction.
 ///
-pub const ATOM_DIR_MASK:      Atom = 0b00011100_00000000;
+pub const ATOM_VM_DIR_MASK:    Atom = 0b00011100_00000000;
 ///
 /// Mask to reset direction bits
 ///
-pub const ATOM_DIR_UNMASK:    Atom = 0b11100011_11111111;
+pub const ATOM_VM_DIR_UNMASK:    Atom = 0b11100011_11111111;
 ///
 /// Amount of bits we have to shift righ to get atom direction.
 ///
-pub const ATOM_DIR_SHIFT:     Atom = 10;
+pub const ATOM_VM_DIR_SHIFT:     Atom = 10;
+///
+/// A bit of VM bond (0 - no bond, has a bond)
+///
+pub const ATOM_VM_BOND_MASK:     Atom = 0b00000010_00000000;
+///
+/// A bit of VM bond (0 - no bond, has a bond)
+///
+pub const ATOM_VM_BOND_UNMASK:   Atom = 0b11111101_11111111;
 ///
 /// We use 6..8 bits for if direction (if atom).
 ///
-pub const ATOM_IF_MASK:       Atom = 0b00000011_10000000;
+pub const ATOM_DIR1_MASK:        Atom = 0b00000001_11000000;
 ///
 /// Amount of bits we have to shift righ to get atom if direction.
 ///
-pub const ATOM_IF_SHIFT:      Atom = 7;
+pub const ATOM_DIR1_SHIFT:       Atom = 6;
 ///
 /// Mask to reset if direction bits
 ///
-pub const ATOM_IF_UNMASK:     Atom = 0b11111100_01111111;
+pub const ATOM_DIR1_UNMASK:      Atom = 0b11111110_00111111;
+///
+/// A bit of dir1 bond (0 - no bond, has a bond)
+///
+pub const ATOM_DIR1_BOND_MASK:   Atom = 0b00000000_00000100;
+///
+/// A bit of dir1 bond (0 - no bond, has a bond)
+///
+pub const ATOM_DIR1_BOND_UNMASK: Atom = 0b11111111_11111011;
 ///
 /// We use 6..8 bits for if direction (if atom).
 ///
-pub const ATOM_THEN_MASK:     Atom = 0b00000000_01110000;
+pub const ATOM_DIR2_MASK:        Atom = 0b00000000_00111000;
 ///
 /// Amount of bits we have to shift righ to get atom then direction.
 ///
-pub const ATOM_THEN_SHIFT:    Atom = 4;
+pub const ATOM_DIR2_SHIFT:       Atom = 3;
 ///
 /// Mask to reset then direction bits
 ///
-pub const ATOM_THEN_UNMASK:   Atom = 0b11111111_10001111;
+pub const ATOM_DIR2_UNMASK:      Atom = 0b11111111_11000111;
+///
+/// A bit of dir2 bond (0 - no bond, has a bond)
+///
+pub const ATOM_DIR2_BOND_MASK:   Atom = 0b00000000_00000010;
+///
+/// A bit of dir2 bond (0 - no bond, has a bond)
+///
+pub const ATOM_DIR2_BOND_UNMASK: Atom = 0b11111111_11111101;
 ///
 /// We use 6..8 bits for direction in mov atom type
 ///
-pub const ATOM_MOV_DIR:       Atom = 0b00000011_10000000;
+pub const ATOM_MOV_DIR:          Atom = 0b00000001_11000000;
 ///
 /// Amount of bits we have to shift to get mov atom direction
 ///
-pub const ATOM_MOV_DIR_SHIFT: Atom = 7;
+pub const ATOM_MOV_DIR_SHIFT:    Atom = 6;
 ///
 /// Reverted directions. Are used in a process of update atom 
 /// bonds during atom moving.

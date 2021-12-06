@@ -28,7 +28,8 @@ fn main() {
     let mut vm_data = VMData{                                                    // Only one instance of this struct must exist
         world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
         buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
-        dirs_rev: DIR_REV
+        dirs_rev: DIR_REV,
+        atoms_cfg: cfg.atoms
     };
     let mut vms = VM::create_vms(cfg.VM_AMOUNT());
     //

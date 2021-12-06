@@ -90,17 +90,23 @@ impl World {
         offs
     }
 
-    pub fn get_dot(&self, offs: Offs) -> Atom {
+    pub fn get_atom(&self, offs: Offs) -> Atom {
         if offs >= self.size as Offs { return ATOM_EMPTY }
         self.cells[offs as I]
     }
 
-    pub fn set_dot(&mut self, offs: Offs, dot: Atom) {
+    pub fn get_dir_atom(&self, offs: Offs, dir: Dir) -> Atom {
+        let offs = offs + self.dirs[dir as I] as Offs;
+        if offs < 0 || offs >= self.size as Offs { return ATOM_EMPTY }
+        self.cells[offs as I]
+    }
+
+    pub fn set_atom(&mut self, offs: Offs, dot: Atom) {
         if offs >= self.size as Offs { return }
         self.cells[offs as I] = dot;
     }
 
-    pub fn mov_dot(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom) {
+    pub fn mov_atom(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom) {
         if dest_offs >= self.size as Offs { return }
         self.cells[dest_offs as I] = dot;
         self.cells[src_offs as I] = ATOM_EMPTY;
