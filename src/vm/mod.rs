@@ -242,9 +242,20 @@ impl VM {
     /// possible atoms.
     ///
     pub fn atom_if(&mut self, atom: Atom, vm_data: &mut VMData) -> bool {
-        if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
-        self.energy -= vm_data.atoms_cfg.if_energy;
-        true
+        // check if -> then scenario
+        if has_dir2_bond(atom) && is_atom(vm_data.world.get_dir_atom(self.offs, get_dir1(atom))) {
+            self.offs = vm_data.world.get_offs(self.offs, get_dir2(atom));
+            self.energy -= vm_data.atoms_cfg.if_energy;
+            return true;
+        }
+        // check else scenario
+        if has_vm_bond(atom) {
+            self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+            self.energy -= vm_data.atoms_cfg.if_energy;
+            return true;
+        }
+
+        false
     }
     ///
     /// Implements job command. Creates one new VM instance (thread).
