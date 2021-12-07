@@ -33,7 +33,7 @@ const ATOMS_MAP: &'static [fn(&mut VM, Atom, &mut VMData) -> bool] = &[
 const ATOM_IF: Atom = 4;
 ///
 /// Describes data for one instance of Virtual Machine
-/// 
+///
 pub struct VM {
     ///
     /// Energy of current VM. Every VM may have it's own.
@@ -92,13 +92,6 @@ impl VM {
         let atom: Atom = vm_data.world.get_atom(self.offs);
         let atom_type = get_type(atom);
         if atom_type == ATOM_EMPTY { return false }
-
-        let dir = get_vm_dir(atom);
-        if dir >= vm_data.world.dirs.len() as Dir {
-            warn!("Invalid direction. Offs: {}, Atom: {}, Dir: {}", self.offs, atom, dir);
-            return false;
-        }
-        self.offs = vm_data.world.get_offs(self.offs, dir);
 
         ATOMS_MAP[atom_type as I](self, atom, vm_data)
     }
@@ -192,6 +185,9 @@ impl VM {
                 }
             }
         }
+        if has_vm_bond(atom) {
+            self.offs = wrld.get_offs(self.offs, get_vm_dir(atom));
+        }
 
         true
     }
@@ -211,6 +207,7 @@ impl VM {
             set_vm_dir(&mut atom0, d0);
             set_vm_bond(&mut atom0);
             vm_data.world.set_atom(offs0, atom0);
+            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy -= vm_data.atoms_cfg.fix_energy;
             return true;
         }
@@ -220,6 +217,7 @@ impl VM {
             set_dir1(&mut atom0, d0);
             set_dir1_bond(&mut atom0);
             vm_data.world.set_atom(offs0, atom0);
+            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy -= vm_data.atoms_cfg.fix_energy;
             return true;
         }
@@ -228,6 +226,7 @@ impl VM {
             set_dir2(&mut atom0, d0);
             set_dir2_bond(&mut atom0);
             vm_data.world.set_atom(offs0, atom0);
+            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy -= vm_data.atoms_cfg.fix_energy;
             return true;
         }
@@ -249,6 +248,7 @@ impl VM {
         if has_vm_bond(atom0) {                                              // first near atom has vm bond
             reset_vm_bond(&mut atom0);
             vm_data.world.set_atom(offs0, atom0);
+            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy += vm_data.atoms_cfg.spl_energy;
             return true;
         }
@@ -257,6 +257,7 @@ impl VM {
         if has_dir1_bond(atom0) {                                            // first near atom has if bond
             reset_dir1_bond(&mut atom0);
             vm_data.world.set_atom(offs0, atom0);
+            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy += vm_data.atoms_cfg.spl_energy;
             return true;
         }
@@ -264,6 +265,7 @@ impl VM {
         if has_dir2_bond(atom0) {                                            // first near atom has then bond
             reset_dir2_bond(&mut atom0);
             vm_data.world.set_atom(offs0, atom0);
+            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy += vm_data.atoms_cfg.spl_energy;
             return true;
         }
