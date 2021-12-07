@@ -23,7 +23,11 @@ pub struct AtomConfig {
     ///
     /// Amount of energy for splitting
     ///
-    pub spl_energy: isize
+    pub spl_energy: isize,
+    ///
+    /// Amount of energy for if atom
+    ///
+    pub if_energy: isize
 }
 //
 // These annotations will create getters for readonly
@@ -83,7 +87,8 @@ impl Config {
             atoms: AtomConfig {
                 mov_energy: 1,
                 fix_energy: 1,
-                spl_energy: 1
+                spl_energy: 1,
+                if_energy: 0
             }
         }
     }

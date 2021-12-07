@@ -34,6 +34,8 @@ fn main() {
     let mut vms = VM::create_vms(cfg.VM_AMOUNT());
     //
     // TODO: should be a loop over VMs
+    // TODO: should be a check if energy < 1 to remove VM
     //
+    //if self.energy < 1 { return false }
     vms[0].run_atom(&mut vm_data);
 }

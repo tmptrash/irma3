@@ -88,7 +88,6 @@ impl VM {
     /// atom direction.
     ///
     pub fn run_atom(&mut self, vm_data: &mut VMData) -> bool {
-        if self.energy < 1 { return false }
         let atom: Atom = vm_data.world.get_atom(self.offs);
         let atom_type = get_type(atom);
         if atom_type == ATOM_EMPTY { return false }
@@ -148,27 +147,10 @@ impl VM {
                 }
             }
 
-            if get_type(atom) == ATOM_IF {                                // if atom has additional else and then bonds
-                // update if bond of moved atom-----------------------------------------------------------------------------
-                d0 = get_dir1(atom);                                      // get if dir of moved atom
-                d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of if moved atom
-                o  = wrld.get_offs(offs, d0);                             // offs of near atom
-                if d1 == DIR_NO { buf.insert(o); }                        // near atom is to far, will add it later
-                else {
-                    set_dir1(&mut atom, d1);                              // distance between atoms is 1. update bond
-                    wrld.set_atom(to_offs, atom);
-                    // update if bond of near atom--------------------------------------------------------------------------
-                    d0 = DIR_REV[d0 as I];                                // get near atom's dir to moved atom
-                    a  = wrld.get_atom(o);                                // near atom
-                    if get_dir1(a) == d0 {                                // near atom has a bond with moved
-                        d1 = DIR_NEAR_ATOM[d0 as I][dir as I];            // final dir of near atom
-                        set_dir1(&mut a, d1);
-                        wrld.set_atom(o, a);
-                    }
-                }
+            if get_type(atom) == ATOM_IF {                                // if atom has additional then bond
                 // update then bond of moved atom---------------------------------------------------------------------------
-                d0 = get_dir2(atom);                                      // get then dir of moved atom
-                d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of then moved atom
+                d0 = get_dir2(atom);                                      // get then dir of if moved atom
+                d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of if moved atom
                 o  = wrld.get_offs(offs, d0);                             // offs of near atom
                 if d1 == DIR_NO { buf.insert(o); }                        // near atom is to far, will add it later
                 else {
@@ -212,15 +194,6 @@ impl VM {
             return true;
         }
         if get_type(atom0) != ATOM_IF { return false }                       // only if atom has if and then bonds
-        // fix if bond------------------------------------------------------------------------------------------------------
-        if !has_dir1_bond(atom0) {                                           // first near atom has no if bond
-            set_dir1(&mut atom0, d0);
-            set_dir1_bond(&mut atom0);
-            vm_data.world.set_atom(offs0, atom0);
-            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
-            self.energy -= vm_data.atoms_cfg.fix_energy;
-            return true;
-        }
         // fix then bond----------------------------------------------------------------------------------------------------
         if !has_dir2_bond(atom0) {                                           // first near atom has no then bond
             set_dir2(&mut atom0, d0);
@@ -253,14 +226,6 @@ impl VM {
             return true;
         }
         if get_type(atom0) != ATOM_IF { return false }
-        // split if bond----------------------------------------------------------------------------------------------------
-        if has_dir1_bond(atom0) {                                            // first near atom has if bond
-            reset_dir1_bond(&mut atom0);
-            vm_data.world.set_atom(offs0, atom0);
-            if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
-            self.energy += vm_data.atoms_cfg.spl_energy;
-            return true;
-        }
         // split then bond--------------------------------------------------------------------------------------------------
         if has_dir2_bond(atom0) {                                            // first near atom has then bond
             reset_dir2_bond(&mut atom0);
@@ -277,6 +242,8 @@ impl VM {
     /// possible atoms.
     ///
     pub fn atom_if(&mut self, atom: Atom, vm_data: &mut VMData) -> bool {
+        if has_vm_bond(atom) { self.offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
+        self.energy -= vm_data.atoms_cfg.if_energy;
         true
     }
     ///
