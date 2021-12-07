@@ -19,7 +19,11 @@ pub struct AtomConfig {
     ///
     /// Amount of energy for joining (fix) atoms
     ///
-    pub fix_energy: isize
+    pub fix_energy: isize,
+    ///
+    /// Amount of energy for splitting
+    ///
+    pub spl_energy: isize
 }
 //
 // These annotations will create getters for readonly
@@ -78,7 +82,8 @@ impl Config {
             frame_delay : 0,
             atoms: AtomConfig {
                 mov_energy: 1,
-                fix_energy: 1
+                fix_energy: 1,
+                spl_energy: 1
             }
         }
     }

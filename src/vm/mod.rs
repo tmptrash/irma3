@@ -196,37 +196,38 @@ impl VM {
         true
     }
     ///
-    /// Implements fix command. Creates vm bond between two atoms. Consumes energy.
+    /// Implements fix atom. Creates vm bond between two atoms. If vm bond is already exist, than
+    /// try to create if/then bond for if atom. Consumes energy.
     ///
     pub fn atom_fix(&mut self, atom: Atom, vm_data: &mut  VMData) -> bool {
-        let o0 = vm_data.world.get_offs(self.offs, get_dir1(atom));       // gets near atom offs to fix to
-        let mut a0 = vm_data.world.get_atom(o0);                          // gets near atom to fix to
-        if !is_atom(a0) { return false }                                  // no near atom to fix
+        let offs0 = vm_data.world.get_offs(self.offs, get_dir1(atom));       // gets first near atom offs to fix
+        let mut atom0 = vm_data.world.get_atom(offs0);                       // gets first near atom to fix
+        if !is_atom(atom0) { return false }                                  // no first near atom to fix
         let d0 = get_dir2(atom);
-        let a1 = vm_data.world.get_dir_atom(o0, d0);
-        if !is_atom(a1) { return false }                                  // if near atom exist
+        if !is_atom(vm_data.world.get_dir_atom(offs0, d0)) { return false }  // there is no second near atom to fix
+
         // fix vm bond------------------------------------------------------------------------------------------------------
-        if !has_vm_bond(a0) {                                             // near atom already has vm bond
-            set_vm_dir(&mut a0, d0);
-            set_vm_bond(&mut a0);
-            vm_data.world.set_atom(o0, a0);
+        if !has_vm_bond(atom0) {                                             // first near atom has no vm bond
+            set_vm_dir(&mut atom0, d0);
+            set_vm_bond(&mut atom0);
+            vm_data.world.set_atom(offs0, atom0);
             self.energy -= vm_data.atoms_cfg.fix_energy;
             return true;
         }
-        if get_type(a0) != ATOM_IF { return false }
+        if get_type(atom0) != ATOM_IF { return false }                       // only if atom has if and then bonds
         // fix if bond------------------------------------------------------------------------------------------------------
-        if !has_dir1_bond(a0) {                                           // near atom already has if bond
-            set_dir1(&mut a0, d0);
-            set_dir1_bond(&mut a0);
-            vm_data.world.set_atom(o0, a0);
+        if !has_dir1_bond(atom0) {                                           // first near atom has no if bond
+            set_dir1(&mut atom0, d0);
+            set_dir1_bond(&mut atom0);
+            vm_data.world.set_atom(offs0, atom0);
             self.energy -= vm_data.atoms_cfg.fix_energy;
             return true;
         }
         // fix then bond----------------------------------------------------------------------------------------------------
-        if !has_dir2_bond(a0) {                                           // near atom already has then bond
-            set_dir2(&mut a0, d0);
-            set_dir2_bond(&mut a0);
-            vm_data.world.set_atom(o0, a0);
+        if !has_dir2_bond(atom0) {                                           // first near atom has no then bond
+            set_dir2(&mut atom0, d0);
+            set_dir2_bond(&mut atom0);
+            vm_data.world.set_atom(offs0, atom0);
             self.energy -= vm_data.atoms_cfg.fix_energy;
             return true;
         }
@@ -234,10 +235,40 @@ impl VM {
         false
     }
     ///
-    /// Implements spl command. Splits two atoms. Releases energy.
+    /// Implements spl atom. Splits two atoms bonds. If atoms has no vm bond, than
+    /// try to split if/then bonds for if atom. Releases energy.
     ///
     pub fn atom_spl(&mut self, atom: Atom, vm_data: &mut  VMData) -> bool {
-        true
+        let offs0 = vm_data.world.get_offs(self.offs, get_dir1(atom));       // gets first near atom offs to split
+        let mut atom0 = vm_data.world.get_atom(offs0);                       // gets first near atom to split
+        if !is_atom(atom0) { return false }                                  // no first near atom to split
+        let d0 = get_dir2(atom);
+        if !is_atom(vm_data.world.get_dir_atom(offs0, d0)) { return false }  // there is no second near atom to split
+
+        // split vm bond----------------------------------------------------------------------------------------------------
+        if has_vm_bond(atom0) {                                              // first near atom has vm bond
+            reset_vm_bond(&mut atom0);
+            vm_data.world.set_atom(offs0, atom0);
+            self.energy += vm_data.atoms_cfg.spl_energy;
+            return true;
+        }
+        if get_type(atom0) != ATOM_IF { return false }
+        // split if bond----------------------------------------------------------------------------------------------------
+        if has_dir1_bond(atom0) {                                            // first near atom has if bond
+            reset_dir1_bond(&mut atom0);
+            vm_data.world.set_atom(offs0, atom0);
+            self.energy += vm_data.atoms_cfg.spl_energy;
+            return true;
+        }
+        // split then bond--------------------------------------------------------------------------------------------------
+        if has_dir2_bond(atom0) {                                            // first near atom has then bond
+            reset_dir2_bond(&mut atom0);
+            vm_data.world.set_atom(offs0, atom0);
+            self.energy += vm_data.atoms_cfg.spl_energy;
+            return true;
+        }
+
+        false
     }
     ///
     /// Implements cond command. Depending on the condition VM will run one of two
