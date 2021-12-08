@@ -1,5 +1,5 @@
 //!
-//!  Application wide definitions. Here are definitions, which may be used 
+//! Application wide definitions. Here are definitions, which may be used 
 //! in every module
 //!
 ///

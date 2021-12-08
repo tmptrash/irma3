@@ -34,6 +34,7 @@ const ATOM_IF: Atom = 4;
 ///
 /// Describes data for one instance of Virtual Machine
 ///
+#[derive(Copy, Clone)]
 pub struct VM {
     ///
     /// Energy of current VM. Every VM may have it's own.
@@ -63,7 +64,11 @@ pub struct VMData {
     ///
     /// Atoms related configuration
     ///
-    pub atoms_cfg: AtomConfig
+    pub atoms_cfg: AtomConfig,
+    ///
+    /// Calback function to add one more VM instance
+    ///
+    pub add_vm: fn() -> bool
 }
 
 impl VM {
@@ -72,16 +77,6 @@ impl VM {
             energy: 0,
             offs: 0
         }
-    }
-    ///
-    /// Creates a list of VMs. It's size depends on configuration.
-    ///
-    pub fn create_vms(vm_amount: usize) -> Vec<VM> {
-        let mut v: Vec<VM> = Vec::with_capacity(vm_amount); 
-        for _i in 0..vm_amount {
-            v.push(VM::new());
-        }
-        v
     }
     ///
     /// Runs one atom depending on type and moves VM to the next one depending on
@@ -261,6 +256,7 @@ impl VM {
     /// Implements job command. Creates one new VM instance (thread).
     ///
     pub fn atom_job(&mut self, atom: Atom, vm_data: &mut VMData) -> bool {
+        //vm_data.add_vm()
         true
     }
     ///
