@@ -5,7 +5,7 @@
 use std::collections::HashSet;
 use crate::utils;
 use crate::global::Offs;
-use crate::stack::Stack;
+use crate::utils::stack::Stack;
 ///
 /// Buffer and stack of moving atoms, which are used by mov command.
 /// Depending on it's size we may move big or small molecules. See mov

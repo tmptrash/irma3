@@ -1,6 +1,8 @@
 //!
 //! Global utilities module
 //!
+pub mod vec;
+pub mod stack;
 ///
 /// Allocates memory to specified size in bytes.
 ///

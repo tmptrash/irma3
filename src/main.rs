@@ -7,8 +7,6 @@ mod vm;
 mod cfg;
 mod utils;
 mod global;
-mod stack;
-mod vec;
 
 use flexi_logger;
 use log::{*};
@@ -18,7 +16,7 @@ use vm::VMData;
 use cfg::Config;
 use vm::buf::MoveBuffer;
 use global::DIR_REV;
-use vec::Vector;
+use utils::vec::Vector;
 
 fn add_vm() -> bool { true }
 ///
