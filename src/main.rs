@@ -42,14 +42,13 @@ fn main() {
         dirs_rev: DIR_REV,
         atoms_cfg: cfg.atoms
     };
-    //
-    // TODO: should be a check if energy < 1 to remove VM
-    //
-    //if self.energy < 1 { return false }
+
     let mut i = 0;
     while i < vms.size() {
         if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
-            vms.add(VM::new(energy, offs));
+            if vms.add(VM::new(energy, offs)) {
+                vms.data[i].dec_energy(energy);
+            }
         }
         if vms.data[i].get_energy() < 1 { vms.del(i); }
         i += 1;

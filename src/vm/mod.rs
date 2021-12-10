@@ -15,10 +15,6 @@ use atom::{*};
 use ret::Return;
 use vmdata::VMData;
 //
-// Internal type for add_vm() callback
-//
-type AddVmCb = dyn FnMut() -> bool;
-//
 // map between atom type number and handler fn index. Should be in stack
 //
 const ATOMS_MAP: &'static [fn(&mut VM, Atom, &mut VMData) -> Return] = &[
@@ -232,19 +228,23 @@ impl VM {
         Return::Code(RET_SKIPPED)
     }
     ///
-    /// Implements job command. Creates one new VM instance (thread).
+    /// Implements job command. Creates one new VM instance (thread). Energy decreasing
+    /// should be called from outside, because new VM is added there
     ///
     pub fn atom_job(&mut self, atom: Atom, vm_data: &mut VMData) -> Return {
         let offs = vm_data.world.get_offs(self.offs, get_vm_dir(atom));
         if !is_atom(vm_data.world.get_atom(offs)) { return Return::Code(RET_SKIPPED) }
-        let energy = self.energy / 2;
-        self.energy -= energy;
-        Return::AddVm(energy, offs)
+        //self.energy -= energy;  // should be outside of VM
+        Return::AddVm(self.energy / 2, offs)
     }
     ///
     /// Return energy amount of current VM
     ///
     pub fn get_energy(&self) -> isize { self.energy }
+    ///
+    /// Decreases energy amount for current VM
+    ///
+    pub fn dec_energy(&mut self, energy: isize) { self.energy -= energy; }
     ///
     /// Just a stub for empty atom in a world
     ///
