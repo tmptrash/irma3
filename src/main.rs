@@ -12,19 +12,18 @@ use flexi_logger;
 use log::{*};
 use world::World;
 use vm::VM;
-use vm::VMData;
+use vm::vmdata::VMData;
+use vm::ret::Return;
 use cfg::Config;
 use vm::buf::MoveBuffer;
 use global::DIR_REV;
 use utils::vec::Vector;
-
-fn add_vm() -> bool { true }
 ///
 /// Creates a list of VMs.
 ///
 fn create_vms(amount: usize) -> Vector<VM> {
     let mut vec = Vector::new(amount);
-    for _i in 0..amount { vec.add(VM::new()); }
+    for _i in 0..amount { vec.add(VM::new(0, 0)); }
     vec
 }
 ///
@@ -41,13 +40,18 @@ fn main() {
         world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
         buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
         dirs_rev: DIR_REV,
-        atoms_cfg: cfg.atoms,
-        add_vm: add_vm
+        atoms_cfg: cfg.atoms
     };
     //
-    // TODO: should be a loop over VMs
     // TODO: should be a check if energy < 1 to remove VM
     //
     //if self.energy < 1 { return false }
-    vms.data[0].run_atom(&mut vm_data);
+    let mut i = 0;
+    while i < vms.size() {
+        if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
+            vms.add(VM::new(energy, offs));
+        }
+        if vms.data[i].get_energy() < 1 { vms.del(i); }
+        i += 1;
+    }
 }

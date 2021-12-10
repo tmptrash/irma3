@@ -3,7 +3,6 @@
 //! moving molecules. Buffer should be reused (singleton) in all VMs.
 //!
 use std::collections::HashSet;
-use crate::utils;
 use crate::global::Offs;
 use crate::utils::stack::Stack;
 ///

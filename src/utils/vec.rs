@@ -5,11 +5,14 @@
 //! iteration through vector we keep active elements at the beginning of it. All
 //! removed (marked) elements are in the tail. idx property pointing to the border
 //! between active and removed elements. To iterate through vector use this code:
-//!     let i: usize = 0;
+//!     let mut i: usize = 0;
 //!     let v: Vector::new(10);
 //!     v.add(1);
 //!     v.add(2);
-//!     while i < v.idx { ... } 
+//!     while i < v.idx {
+//!         ...
+//!         i += 1;
+//!     } 
 //!
 use crate::utils;
 

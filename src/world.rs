@@ -57,16 +57,6 @@ impl World {
         )
     }
     ///
-    /// Checks if two dots in a world are near each other. Near means
-    /// not more than 1 dot. e.g.: xx - near, x x - not
-    ///
-    pub fn is_near(offs0: Offs, offs1: Offs, width: usize) -> bool {
-        let distance = ((offs0 - offs1) as i32).abs();
-        if distance < 2 { return true }
-        if distance / width as i32 > 1 { return false }
-        (distance % width as i32).abs() < 2
-    }
-    ///
     /// Returns direction between two dots in a world. The direction is
     /// obtained from the perspective of first dot. This function assumes
     /// that two offsets are near each other (distance == 1) and within
