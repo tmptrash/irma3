@@ -5,7 +5,6 @@ use crate::world::World;
 use crate::vm::buf::MoveBuffer;
 use crate::cfg::AtomConfig;
 use crate::global::Dir;
-use crate::global::Offs;
 use crate::global::DIRS_LEN;
 ///
 /// Data needed for VM to work. Should be set from outside of VM

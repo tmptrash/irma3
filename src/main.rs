@@ -7,6 +7,7 @@ mod vm;
 mod cfg;
 mod utils;
 mod global;
+mod io;
 
 use flexi_logger;
 use log::{*};
@@ -18,6 +19,7 @@ use cfg::Config;
 use vm::buf::MoveBuffer;
 use global::DIR_REV;
 use utils::vec::Vector;
+use io::IO;
 ///
 /// Creates a list of VMs.
 ///
@@ -35,6 +37,7 @@ fn main() {
     info!("Welcome to irma4 - Atomic Artificial Life Simulator in Rust");
 
     let mut cfg = Config::new();                                                 // Global configuration. Must be a singleton
+    let mut io  = IO::new();
     let mut vms = create_vms(cfg.VM_AMOUNT());
     let mut vm_data = VMData{                                                    // Only one instance of this struct must exist
         world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
