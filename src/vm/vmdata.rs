@@ -6,10 +6,11 @@ use crate::vm::buf::MoveBuffer;
 use crate::cfg::AtomConfig;
 use crate::global::Dir;
 use crate::global::DIRS_LEN;
+use crate::io::IO;
 ///
 /// Data needed for VM to work. Should be set from outside of VM
 ///
-pub struct VMData<'a> {
+pub struct VMData<'a, 'b> {
     ///
     /// Reference to the world data
     ///
@@ -26,4 +27,8 @@ pub struct VMData<'a> {
     /// Atoms related configuration
     ///
     pub atoms_cfg: &'a AtomConfig,
+    ///
+    /// Reference to IO mechanism
+    ///
+    pub io: &'b IO
 }

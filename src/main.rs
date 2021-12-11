@@ -43,7 +43,8 @@ fn main() {
         world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
         buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
         dirs_rev: DIR_REV,
-        atoms_cfg: &cfg.atoms
+        atoms_cfg: &cfg.atoms,
+        io: &io
     };
     //
     // Main loop
