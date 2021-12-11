@@ -10,7 +10,7 @@ use crate::global::DIRS_LEN;
 ///
 /// Data needed for VM to work. Should be set from outside of VM
 ///
-pub struct VMData {
+pub struct VMData<'a> {
     ///
     /// Reference to the world data
     ///
@@ -26,5 +26,5 @@ pub struct VMData {
     ///
     /// Atoms related configuration
     ///
-    pub atoms_cfg: AtomConfig,
+    pub atoms_cfg: &'a AtomConfig,
 }

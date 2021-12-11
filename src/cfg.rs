@@ -4,6 +4,7 @@
 //!
 use getset::{CopyGetters, Getters};
 use crate::global::DIRS_LEN;
+use log::{*};
 ///
 /// Configuration related to atoms
 ///
@@ -73,15 +74,15 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Config {
-        const width: usize = 1024;
-        const height: usize = 1024;
+        const WIDTH:  usize = 1024;
+        const HEIGHT: usize = 1024;
         Config {
             // read only configuration
-            WIDTH: width,
-            HEIGHT: height,
+            WIDTH,
+            HEIGHT,
             MOV_BUF_SIZE: 1024,
             VM_AMOUNT: 1024,
-            DIR_TO_OFFS: [-(width as i32) - 1, -(width as i32), -(width as i32) + 1, 1, (width as i32) + 1, (width as i32), (width as i32) - 1, -1],
+            DIR_TO_OFFS: [-(WIDTH as i32) - 1, -(WIDTH as i32), -(WIDTH as i32) + 1, 1, (WIDTH as i32) + 1, (WIDTH as i32), (WIDTH as i32) - 1, -1],
             // read-write configuration
             frame_delay : 0,
             atoms: AtomConfig {

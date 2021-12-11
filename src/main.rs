@@ -1,6 +1,6 @@
 //!
 //! Welcome to `irma4` - Atomic Artificial Life Simulator in Rust. This is stand alone
-//! executable, which runs atomic physics of plain rectangular area in 2D world.
+//! executable, which runs atomic physics in 2D world.
 //!
 mod world;
 mod vm;
@@ -40,17 +40,21 @@ fn main() {
         world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
         buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
         dirs_rev: DIR_REV,
-        atoms_cfg: cfg.atoms
+        atoms_cfg: &cfg.atoms
     };
-
+    //
+    // Main loop
+    //
     let mut i = 0;
-    while i < vms.size() {
-        if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
-            if vms.add(VM::new(energy, offs)) {
-                vms.data[i].dec_energy(energy);
+    loop {
+        if vms.size() > 0 {
+            if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
+                if vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
             }
+            if vms.data[i].get_energy() < 1 { vms.del(i); }
+
+            i += 1;
+            if i > vms.size() { i = 0 }
         }
-        if vms.data[i].get_energy() < 1 { vms.del(i); }
-        i += 1;
     }
 }
