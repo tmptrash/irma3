@@ -61,3 +61,14 @@ impl<T: Copy> Vector<T> {
         self.idx
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::vec::Vector;
+
+    #[test]
+    fn test_new() {
+        let v: Vector<i32> = Vector::new(2);
+        assert_eq!(v.size(), 0);
+    }
+}
