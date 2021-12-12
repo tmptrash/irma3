@@ -7,13 +7,13 @@ irma - an Artificial Atomic Life Simulator on Rust. This is fourth version of su
 - Obtain increasing complexity of organisms
 - Just run and check what will be
 
-# How to run
+## How to run
 
 ```
 cargo run
 ```
 
-# How to test
+## How to test
 
 ```
 cargo test
