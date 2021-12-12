@@ -68,7 +68,56 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let v: Vector<i32> = Vector::new(2);
+        let size = 2;
+        let v: Vector<i32> = Vector::new(size);
         assert_eq!(v.size(), 0);
+        assert_eq!(v.data.len(), size);
+    }
+    #[test]
+    fn test_add() {
+        let mut v: Vector<i32> = Vector::new(2);
+        assert_eq!(v.add(1), true);
+        assert_eq!(v.add(2), true);
+        assert_eq!(v.add(3), false);
+        assert_eq!(v.data[0] == 1 && v.data[1] == 2, true);
+    }
+    #[test]
+    fn test_size() {
+        let mut v: Vector<i32> = Vector::new(1);
+        assert_eq!(v.size(), 0);
+        v.add(1);
+        assert_eq!(v.size(), 1);
+        v.add(2);
+        assert_eq!(v.size(), 1);
+    }
+    #[test]
+    fn test_del() {
+        let size = 2;
+        let mut v: Vector<i32> = Vector::new(size);
+        assert_eq!(v.size(), 0);
+        assert_eq!(v.data.len(), size);
+        v.add(1);
+        v.add(2);
+        assert_eq!(v.del(0), true);
+        assert_eq!(v.data[0], 2);
+    }
+    #[test]
+    fn test_mixed() {
+        let size = 2;
+        let mut v: Vector<i32> = Vector::new(size);
+        assert_eq!(v.size(), 0);
+        v.add(1);                         // [1]
+        v.add(2);                         // [1,2]
+        v.add(3);                         // [1,2]
+        assert_eq!(v.size(), size);
+        v.del(1);                         // [1]
+        assert_eq!(v.data[0], 1);
+        v.del(1);                         // [1]
+        assert_eq!(v.data[0], 1);
+        v.del(0);                         // []
+        assert_eq!(v.size(), 0);
+        v.add(3);                         // [3]
+        assert_eq!(v.size(), 1);
+        assert_eq!(v.data[0], 3);         // [3]
     }
 }
