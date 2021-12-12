@@ -39,7 +39,7 @@ fn main() {
     let mut cfg = Config::new();                                                 // Global configuration. Must be a singleton
     let mut io  = IO::new();
     let mut vms = create_vms(cfg.VM_AMOUNT());
-    let mut vm_data = VMData{                                                    // Only one instance of this struct must exist
+    let mut vm_data = VMData {                                                   // Only one instance of this struct must exist
         world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
         buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
         dirs_rev: DIR_REV,
