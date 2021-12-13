@@ -54,3 +54,15 @@ impl<T: Copy> Stack<T> {
     ///
     pub fn not_empty(&self) -> bool { self.idx != STACK_EMPTY }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::stack::Stack;
+
+    #[test]
+    fn test_new() {
+        let v: Stack<i32> = Stack::new(2);
+        assert_eq!(v.not_empty(), false);
+    }
+}

@@ -24,3 +24,9 @@ cargo run
 ```
 cargo test
 ```
+
+### How to generate documentation
+
+```
+cargo doc
+```

@@ -79,6 +79,7 @@ mod tests {
         assert_eq!(v.add(1), true);
         assert_eq!(v.add(2), true);
         assert_eq!(v.add(3), false);
+        assert_eq!(v.add(4), false);
         assert_eq!(v.data[0] == 1 && v.data[1] == 2, true);
     }
     #[test]
@@ -93,6 +94,7 @@ mod tests {
         assert_eq!(v.size(), size);
         assert_eq!(v.del(0), true);
         assert_eq!(v.data[0], 3);
+        assert_eq!(v.data[1], 2);
         assert_eq!(v.size(), 2);
     }
     #[test]
@@ -110,6 +112,17 @@ mod tests {
         assert_eq!(v.del(1), true);
         assert_eq!(v.data[0] == 1 && v.data[1] == 4 && v.data[2] == 3, true);
         assert_eq!(v.size(), 3);
+        v.del(2);
+        assert_eq!(v.size(), 2);
+        assert_eq!(v.data[0] == 1 && v.data[1] == 4, true);
+        assert_eq!(v.del(2), false);
+        v.del(0);
+        assert_eq!(v.data[0], 4);
+        v.del(0);
+        assert_eq!(v.size(), 0);
+        assert_eq!(v.del(2), false);
+        assert_eq!(v.del(1), false);
+        assert_eq!(v.del(0), false);
     }
     #[test]
     fn test_size() {
