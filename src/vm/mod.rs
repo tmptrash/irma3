@@ -85,8 +85,8 @@ impl VM {
         buf.clear();
         stack.push(self.offs);
 
-        while stack.not_empty() {                                         // before while, stack should have >= 1 atoms
-            offs = stack.last();                                          // offset of atom before move
+        while !stack.empty() {                                            // before while, stack should have >= 1 atoms
+            offs = stack.last().unwrap();                                 // offset of atom before move
             atom = wrld.get_atom(offs);                                   // atom we have to move
             to_offs = wrld.get_offs(offs, dir);                           // destination atom position
             if is_atom(wrld.get_atom(to_offs)) {                          // can't move atom. Another one is there

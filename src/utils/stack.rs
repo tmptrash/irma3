@@ -4,47 +4,58 @@
 //! if we reach zero stack size it's index (self.idx) will be STACK_EMPTY.
 //!
 use crate::utils;
+use crate::global::I;
 ///
 /// Means that stack has no elements in it.
 ///
-pub const STACK_EMPTY: usize = usize::MAX;
+pub const STACK_EMPTY: isize = -1;
 ///
 /// Speed optimized stack.
 ///
 pub struct Stack<T> {
     data: Vec<T>,
-    idx: usize
+    idx: isize,
+    size: isize
 }
 
 impl<T: Copy> Stack<T> {
     pub fn new(size: usize) -> Stack<T> {
         Stack {
             data: utils::alloc(size),
-            idx: STACK_EMPTY
+            idx: STACK_EMPTY,
+            size: size as isize
         }
     }
     ///
-    /// Puts an atom offset to the stack's tail and increase stack size by 1. We dont
-    /// need to check overflow for + operator, because we never reach usize::MAX - 1
+    /// Puts an elements to the stack's tail and increase stack size by 1
     ///
-    pub fn push(&mut self, offs: T) { self.idx += 1; self.data[self.idx] = offs }
-    ///
-    /// Returns atom's offs from the stack tail and reduce it's size by 1. We need overflow
-    /// to get STACK_EMPTY in case of zero stack length
-    ///
-    pub fn pop(&mut self) -> T {
-        let offs = self.data[self.idx];
-        self.idx = self.idx.wrapping_sub(1);
-        offs
+    pub fn push(&mut self, data: T) -> bool {
+        if self.idx + 1 == self.size { return false }
+        self.idx += 1;
+        self.data[self.idx as I] = data;
+        true
     }
     ///
-    /// Decrease stack size by 1. Doesn't return an atom' offs
+    /// Returns element from the stack tail and reduce it's size by 1. We need overflow
+    /// to get STACK_EMPTY in case of zero stack length
     ///
-    pub fn shrink(&mut self) { self.idx = self.idx.wrapping_sub(1) }
+    pub fn pop(&mut self) -> Option<T> {
+        if self.idx < 0 { return Option::None }
+        let data = self.data[self.idx as I];
+        self.idx -= 1;
+        Option::Some(data)
+    }
     ///
-    /// Returns last atom's offs from stack without changing it's size
+    /// Decrease stack size by 1. Doesn't return an element
     ///
-    pub fn last(&self) -> T { self.data[self.idx] }
+    pub fn shrink(&mut self) { if self.idx < 0 { return }; self.idx -= 1; }
+    ///
+    /// Returns last element from stack without changing it's size
+    ///
+    pub fn last(&self) -> Option<T> {
+        if self.idx < 0 { return Option::None }
+        Option::Some(self.data[self.idx as I])
+    }
     ///
     /// Fast reset of stack by moving index to the beginning
     ///
@@ -52,9 +63,8 @@ impl<T: Copy> Stack<T> {
     ///
     /// Returns true, if stack contains at least one atom
     ///
-    pub fn not_empty(&self) -> bool { self.idx != STACK_EMPTY }
+    pub fn empty(&self) -> bool { self.idx == STACK_EMPTY }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -63,6 +73,29 @@ mod tests {
     #[test]
     fn test_new() {
         let v: Stack<i32> = Stack::new(2);
-        assert_eq!(v.not_empty(), false);
+        assert_eq!(v.empty(), true);
+        assert_eq!(v.last(), Option::None);
+    }
+    #[test]
+    fn test_push() {
+        let mut v: Stack<i32> = Stack::new(2);
+        v.push(1);
+        assert_eq!(v.empty(), false);
+        assert_eq!(v.last().unwrap(), 1);
+        v.push(2);
+        assert_eq!(v.empty(), false);
+        assert_eq!(v.last().unwrap(), 2);
+        assert_eq!(v.push(3), false);
+        assert_eq!(v.empty(), false);
+        assert_eq!(v.last().unwrap(), 2);
+    }
+    #[test]
+    fn test_pop() {
+        let mut v: Stack<i32> = Stack::new(2);
+        assert_eq!(v.empty(), true);
+        v.push(1);
+        assert_eq!(v.empty(), false);
+        assert_eq!(v.pop().unwrap(), 1);
+        assert_eq!(v.empty(), true);
     }
 }
