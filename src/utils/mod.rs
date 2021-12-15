@@ -42,4 +42,22 @@ mod tests {
         assert_eq!(v[1], 0);
         assert_eq!(v[2], 0);
     }
+    #[test]
+    fn test_zero1() {
+        let mut v: Vec<u32> = alloc(2);
+        zero(&mut v, 1);
+        assert_eq!(v.len(), 2);
+        assert_eq!(v[0], 1);
+        assert_eq!(v[1], 1);
+    }
+    #[test]
+    fn test_zero2() {
+        let size = 1024 * 1024;
+        let mut v: Vec<u32> = alloc(size);
+        zero(&mut v, 1);
+        assert_eq!(v.len(), size);
+        assert_eq!(v[0], 1);
+        assert_eq!(v[1], 1);
+        assert_eq!(v[size - 1], 1);
+    }
 }
