@@ -97,5 +97,110 @@ mod tests {
         assert_eq!(v.empty(), false);
         assert_eq!(v.pop().unwrap(), 1);
         assert_eq!(v.empty(), true);
+        assert_eq!(v.pop(), Option::None);
+        assert_eq!(v.empty(), true);
+    }
+    #[test]
+    fn test_pop1() {
+        let mut v: Stack<i32> = Stack::new(2);
+        assert_eq!(v.pop(), Option::None);
+        assert_eq!(v.push(1), true);
+        assert_eq!(v.pop().unwrap(), 1);
+        assert_eq!(v.pop(), Option::None);
+        assert_eq!(v.empty(), true);
+    }
+    #[test]
+    fn test_shrink() {
+        let mut v: Stack<i32> = Stack::new(2);
+        v.push(1);
+        v.push(2);
+        v.shrink();
+        assert_eq!(v.last().unwrap(), 1);
+        assert_eq!(v.empty(), false);
+        v.shrink();
+        assert_eq!(v.last(), Option::None);
+        assert_eq!(v.empty(), true);
+    }
+    #[test]
+    fn test_last() {
+        let mut v: Stack<i32> = Stack::new(3);
+        v.push(3);
+        v.push(2);
+        v.push(1);
+        assert_eq!(v.last().unwrap(), 1);
+        assert_eq!(v.last().unwrap(), 1);
+        v.pop();
+        assert_eq!(v.last().unwrap(), 2);
+        v.pop();
+        assert_eq!(v.last().unwrap(), 3);
+        assert_eq!(v.empty(), false);
+        v.pop();
+        assert_eq!(v.empty(), true);
+        assert_eq!(v.last(), Option::None);
+    }
+    #[test]
+    fn test_clear() {
+        let mut v: Stack<i32> = Stack::new(3);
+        assert_eq!(v.empty(), true);
+        v.clear();
+        assert_eq!(v.empty(), true);
+        v.push(1);
+        assert_eq!(v.empty(), false);
+        v.clear();
+        assert_eq!(v.empty(), true);
+        v.push(1);
+        v.push(2);
+        assert_eq!(v.empty(), false);
+        assert_eq!(v.last().unwrap(), 2);
+        v.clear();
+        assert_eq!(v.empty(), true);
+        assert_eq!(v.last(), Option::None);
+    }
+    #[test]
+    fn test_empty() {
+        let mut v: Stack<i32> = Stack::new(2);
+        assert_eq!(v.empty(), true);
+        v.push(1);
+        assert_eq!(v.empty(), false);
+        v.pop();
+        assert_eq!(v.empty(), true);
+        v.push(1);
+        v.push(2);
+        assert_eq!(v.empty(), false);
+        v.shrink();
+        assert_eq!(v.empty(), false);
+        v.shrink();
+        assert_eq!(v.empty(), true);
+    }
+    #[test]
+    fn test_mixed() {
+        let mut v1: Stack<i32> = Stack::new(2);
+        let mut v2: Stack<i32> = Stack::new(2);
+        assert_eq!(v1.empty(), true);
+        assert_eq!(v2.empty(), true);
+        v1.push(1);
+        assert_eq!(v1.empty(), false);
+        assert_eq!(v2.empty(), true);
+        v2.push(2);
+        assert_eq!(v1.empty(), false);
+        assert_eq!(v2.empty(), false);
+        v1.pop();
+        assert_eq!(v1.empty(), true);
+        assert_eq!(v2.empty(), false);
+        v1.push(1);
+        v2.push(2);
+        v1.clear();
+        v2.clear();
+        assert_eq!(v1.empty(), true);
+        assert_eq!(v2.empty(), true);
+        v1.push(1);
+        v2.push(2);
+        v2.shrink();
+        assert_eq!(v1.empty(), false);
+        assert_eq!(v2.empty(), true);
+        v2.shrink();
+        assert_eq!(v1.empty(), false);
+        assert_eq!(v2.empty(), true);
+        assert_eq!(v1.last().unwrap(), 1);
     }
 }
