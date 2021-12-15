@@ -60,6 +60,10 @@ impl<T: Copy> Vector<T> {
     pub fn size(&self) -> usize {
         self.idx
     }
+
+    pub fn full(&self) -> bool {
+        self.idx >= self.size
+    }
 }
 
 #[cfg(test)]
@@ -132,6 +136,15 @@ mod tests {
         assert_eq!(v.size(), 1);
         v.add(2);
         assert_eq!(v.size(), 1);
+    }
+    #[test]
+    fn test_full() {
+        let mut v: Vector<i32> = Vector::new(2);
+        assert_eq!(v.full(), false);
+        v.add(1);
+        assert_eq!(v.full(), false);
+        v.add(1);
+        assert_eq!(v.full(), true);
     }
     #[test]
     fn test_mixed() {

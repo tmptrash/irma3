@@ -1,7 +1,7 @@
 //!
 //! IO module. Connects core (world, VMs and main loop) with plugins
 //!
-mod events;
+pub mod events;
 
 use crate::global::Offs;
 use crate::global::Atom;
@@ -13,9 +13,11 @@ pub type Callback = fn(&Param);
 ///
 /// Enum for different event parameters types
 ///
+#[derive(Clone, Copy)]
 pub enum Param {
     None,                                                       // No parameters
-    SetDot(Offs, Atom)                                          // Draw atom by offset
+    SetDot(Offs, Atom),                                         // Draw atom by offset
+    Run(bool)                                                   // Runs or stops a s
 }
 ///
 /// Event bus object. Holds all listeners by event
@@ -49,5 +51,21 @@ impl IO {
     ///
     pub fn fire(&self, event: usize, p: &Param) {
         for cb in &self.events[event] { cb(p) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::io::Param;
+    use crate::io::IO;
+    use crate::io::events::{*};
+    static mut BOOL_VAR: bool = false;
+
+    #[test]
+    fn test_new() {
+        let mut io = IO::new();
+        io.on(EVENT_RUN, |p: &Param| { unsafe { if let Param::Run(r) = p { BOOL_VAR = *r }} });
+        io.fire(EVENT_RUN, &Param::Run(true));
+        assert_eq!(unsafe { BOOL_VAR }, true);
     }
 }

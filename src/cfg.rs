@@ -63,6 +63,14 @@ pub struct Config {
     /// 
     DIR_TO_OFFS: [i32; DIRS_LEN],
     ///
+    /// Run system on start
+    ///
+    AUTORUN: bool,
+    ///
+    /// Current system run state
+    ///
+    pub is_running: bool,
+    ///
     /// Read-Write properties. Available through direct access from every module.
     ///
     pub frame_delay: u32,
@@ -73,7 +81,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Config {
+    pub const fn new() -> Config {
         const WIDTH:  usize = 1024;
         const HEIGHT: usize = 1024;
         Config {
@@ -83,7 +91,9 @@ impl Config {
             MOV_BUF_SIZE: 1024,
             VM_AMOUNT: 1024,
             DIR_TO_OFFS: [-(WIDTH as i32) - 1, -(WIDTH as i32), -(WIDTH as i32) + 1, 1, (WIDTH as i32) + 1, (WIDTH as i32), (WIDTH as i32) - 1, -1],
+            AUTORUN: false,
             // read-write configuration
+            is_running: false,
             frame_delay : 0,
             atoms: AtomConfig {
                 mov_energy: 1,

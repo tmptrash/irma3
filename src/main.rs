@@ -40,6 +40,18 @@ use vm::buf::MoveBuffer;
 use global::DIR_REV;
 use utils::vec::Vector;
 use io::IO;
+use io::Param;
+use io::events::{*};
+///
+/// Global parameter, which is used for stop/run the system
+///
+static mut CFG: Config = Config::new();
+///
+/// Inits core API
+///
+fn init_api(io: &mut IO) {
+    io.on(EVENT_RUN, |p: &Param| { if let Param::Run(run) = p { unsafe { CFG.is_running = *run } } });
+}
 ///
 /// Creates a list of VMs.
 ///
@@ -50,30 +62,36 @@ fn create_vms(amount: usize) -> Vector<VM> {
 }
 ///
 /// Entry point of application. It creates global Configuration, World and list of VMs, logger
-/// and other components.
+/// and other core components.
 ///
 fn main() {
-    flexi_logger::Logger::try_with_env().unwrap().start().unwrap();              // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
-    info!("Welcome to irma4 - Atomic Artificial Life Simulator in Rust");
-
-    let mut cfg = Config::new();                                                 // Global configuration. Must be a singleton
+    flexi_logger::Logger::try_with_env().unwrap().format(flexi_logger::colored_opt_format).start().unwrap();              // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
+    info!("Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust");
+    info!("Init core");
+    info!("  Init IO");
     let mut io  = IO::new();
-    let mut vms = create_vms(cfg.VM_AMOUNT());
+    init_api(&mut io);
+    info!("  Create VMs");
+    let mut vms = create_vms(unsafe { CFG.VM_AMOUNT() });
+    info!("  Create world");
     let mut vm_data = VMData {                                                   // Only one instance of this struct must exist
-        world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
-        buf: MoveBuffer::new(cfg.MOV_BUF_SIZE()),
+        world: unsafe {World::new(CFG.WIDTH(), CFG.HEIGHT(), CFG.DIR_TO_OFFS()).unwrap()},
+        buf: MoveBuffer::new(unsafe {CFG.MOV_BUF_SIZE()}),
         dirs_rev: DIR_REV,
-        atoms_cfg: &cfg.atoms,
+        atoms_cfg: unsafe { &CFG.atoms },
         io: &io
     };
     //
     // Main loop
     //
+    unsafe { if CFG.AUTORUN() { CFG.is_running = CFG.AUTORUN() } }
+    info!("{}", if unsafe {CFG.AUTORUN()} { "Run" } else { "Waiting for command..." });
     let mut i = 0;
     loop {
+        if unsafe { CFG.is_running } { continue }
         if vms.size() > 0 {
             if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
-                if vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
+                if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
             }
             if vms.data[i].get_energy() < 1 { vms.del(i); }
 
