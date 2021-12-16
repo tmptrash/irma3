@@ -43,7 +43,7 @@ use io::IO;
 use io::Param;
 use io::events::{*};
 ///
-/// Global parameter, which is used for stop/run the system
+/// Global configuration, which is shared for entire app
 ///
 static mut CFG: Config = Config::new();
 ///
@@ -85,10 +85,10 @@ fn main() {
     // Main loop
     //
     unsafe { if CFG.AUTORUN() { CFG.is_running = CFG.AUTORUN() } }
-    info!("{}", if unsafe {CFG.AUTORUN()} { "Run" } else { "Waiting for command..." });
+    info!("{}", if unsafe {CFG.AUTORUN()} { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
-        if unsafe { CFG.is_running } { continue }
+        if unsafe { !CFG.is_running } { continue }
         if vms.size() > 0 {
             if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
                 if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
