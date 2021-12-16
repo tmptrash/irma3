@@ -17,7 +17,8 @@ pub type Callback = fn(&Param);
 pub enum Param {
     None,                                                       // No parameters
     SetDot(Offs, Atom),                                         // Draw atom by offset
-    Run(bool)                                                   // Runs or stops a s
+    Run(bool),                                                  // Runs or stops a s
+    Stop                                                        // Stop an app
 }
 ///
 /// Event bus object. Holds all listeners by event

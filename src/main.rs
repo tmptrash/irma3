@@ -28,6 +28,7 @@ mod cfg;
 mod utils;
 mod global;
 mod io;
+mod plugins;
 
 use flexi_logger;
 use log::{*};
@@ -42,6 +43,7 @@ use utils::vec::Vector;
 use io::IO;
 use io::Param;
 use io::events::{*};
+use plugins::terminal;
 ///
 /// Global configuration, which is shared for entire app
 ///
@@ -50,14 +52,37 @@ static mut CFG: Config = Config::new();
 /// Inits core API
 ///
 fn init_api(io: &mut IO) {
+    info!("  Init core API");
     io.on(EVENT_RUN, |p: &Param| { if let Param::Run(run) = p { unsafe { CFG.is_running = *run } } });
+}
+///
+/// Init plugins of the core
+///
+fn init_plugins(io: &mut IO) {
+    info!("  Init core plugins");
+    terminal::init(io);
+}
+///
+/// Destroy plugins of the core
+///
+fn destroy_plugins(io: &IO) {
+    info!("  Destroy core plugins");
+    terminal::destroy(io);
+}
+///
+/// Call plugins idle() function to do their internal work
+///
+fn idle_pugins(io: &IO) {
+    terminal::idle(io);
 }
 ///
 /// Creates a list of VMs.
 ///
 fn create_vms(amount: usize) -> Vector<VM> {
+    info!("  Create VMs");
     let mut vec = Vector::new(amount);
     for _i in 0..amount { vec.add(VM::new(0, 0)); }
+    info!("    Created {} VMs", amount);
     vec
 }
 ///
@@ -68,10 +93,9 @@ fn main() {
     flexi_logger::Logger::try_with_env().unwrap().format(flexi_logger::colored_opt_format).start().unwrap();              // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
     info!("Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust");
     info!("Init core");
-    info!("  Init IO");
     let mut io  = IO::new();
     init_api(&mut io);
-    info!("  Create VMs");
+    init_plugins(&mut io);
     let mut vms = create_vms(unsafe { CFG.VM_AMOUNT() });
     info!("  Create world");
     let mut vm_data = VMData {                                                   // Only one instance of this struct must exist
@@ -88,6 +112,8 @@ fn main() {
     info!("{}", if unsafe {CFG.AUTORUN()} { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
+        if i == 0 { idle_pugins(&io) }
+        if unsafe { CFG.stopped } { break }
         if unsafe { !CFG.is_running } { continue }
         if vms.size() > 0 {
             if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
@@ -99,4 +125,6 @@ fn main() {
             if i > vms.size() { i = 0 }
         }
     }
+
+    destroy_plugins(&io);
 }

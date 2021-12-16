@@ -71,6 +71,10 @@ pub struct Config {
     ///
     pub is_running: bool,
     ///
+    /// Indicate that app should to be stopped
+    ///
+    pub stopped: bool,
+    ///
     /// Read-Write properties. Available through direct access from every module.
     ///
     pub frame_delay: u32,
@@ -94,6 +98,7 @@ impl Config {
             AUTORUN: false,
             // read-write configuration
             is_running: false,
+            stopped: false,
             frame_delay : 0,
             atoms: AtomConfig {
                 mov_energy: 1,
