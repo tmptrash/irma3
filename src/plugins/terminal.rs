@@ -16,9 +16,13 @@ thread_local!(static THREAD: Receiver<String> = create_thread());
 /// Module local variable, which affects thread activeness
 ///
 static mut STOPPED: bool = false;
-
+///
+/// Plugin API. initializes plugin
+///
 pub fn init(_io: &IO) {}
-
+///
+/// Plugin API. Do main work by haddling terminal commands and call core API
+///
 pub fn idle(io: &IO) {
     match THREAD.with(|rec| rec.try_recv()) {
         Ok(key) => print!("Received: {}", key),
@@ -26,8 +30,10 @@ pub fn idle(io: &IO) {
         Err(TryRecvError::Disconnected) => panic!("Channel disconnected"),
     }
 }
-
-pub fn destroy(io: &IO) {
+///
+/// Plugin API. Destroys plugin. 
+///
+pub fn destroy(_io: &IO) {
     unsafe { STOPPED = true }
 }
 
