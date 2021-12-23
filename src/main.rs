@@ -22,16 +22,13 @@
 //! types, which give all the variety of forms in this virtual world. To run such interactions 
 //! (we also call them "run atoms") we use special [Virtual Machines](#Atomic-Virtual-Machines).
 //!
-use dlopen;
-#[macro_use]
-extern crate dlopen_derive;
-
 mod world;
 mod vm;
 mod cfg;
 mod plugins;
 
-use dlopen::wrapper::{Container};
+#[macro_use]
+extern crate dlopen_derive;
 use flexi_logger;
 use log::{*};
 use world::World;
@@ -45,44 +42,23 @@ use share::utils::vec::Vector;
 use share::io::IO;
 use share::io::Param;
 use share::io::events::{*};
-use plugins::Plugin;
 ///
-/// Global configuration, which is shared for entire app
+/// Global configuration, which is shared for entire app. The meaning of this is
+/// in ability to change RW properties in real time to affect application without
+/// rerun
 ///
 static mut CFG: Config = Config::new();
 ///
-/// Inits core API
+/// Inits core API. This is a place where Core adds listeners to different events,
+/// which are fired from outside of the core. For example, from a plugin.
 ///
 fn init_api(io: &mut IO) {
     info!("  Init core API");
-    io.on(EVENT_RUN, |p: &Param| { if let Param::Run(run) = p { unsafe { CFG.is_running = *run } } });
-}
-///
-/// Init plugins of the core
-///
-fn load_plugins(path: &str) -> Vec<Container<Plugin>> {
-    info!("  Load core plugins");
-    plugins::load(path).unwrap()
-}
-///
-/// Inits plugins
-///
-fn init_plugins(plugins: &Vec<Container<Plugin>>, io: &IO) {
-    info!("  Init core plugins");
-    for p in plugins.iter() { p.init(io) }
-}
-///
-/// Call plugins idle() function to do their internal work
-///
-fn idle_plugins(plugins: &Vec<Container<Plugin>>, io: &IO) {
-    for p in plugins.iter() { p.idle(io) }
-}
-///
-/// Destroy plugins of the core
-///
-fn remove_plugins(plugins: &Vec<Container<Plugin>>, io: &IO) {
-    info!("  Destroy core plugins");
-    for p in plugins { p.remove(io) }
+    io.on(EVENT_RUN,  |p: &Param|  { if let Param::Run(run) = p { unsafe { CFG.is_running = *run } } });
+    io.on(EVENT_EXIT, |_p: &Param| {
+        info!("Quit the system");
+        unsafe { CFG.stopped = true }
+    });
 }
 ///
 /// Creates a list of VMs.
@@ -96,16 +72,16 @@ fn create_vms(amount: usize) -> Vector<VM> {
 }
 ///
 /// Entry point of application. It creates global Configuration, World and list of VMs, logger
-/// and other core components.
+/// and other Core components.
 ///
 fn main() {
-    flexi_logger::Logger::try_with_env().unwrap().format(flexi_logger::colored_opt_format).start().unwrap();              // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
+    flexi_logger::Logger::try_with_env_or_str("info").unwrap().format(flexi_logger::colored_opt_format).start().unwrap(); // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
     info!("Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust");
     info!("Init core");
     let mut io = IO::new();
     init_api(&mut io);
-    let plugins = load_plugins(unsafe { CFG.PLUGINS_DIR() });
-    init_plugins(&plugins, &io);
+    let plugins = plugins::load(unsafe { CFG.PLUGINS_DIR() });
+    plugins::init(&plugins, &io);
     let mut vms = create_vms(unsafe { CFG.VM_AMOUNT() });
     info!("  Create world");
     let mut vm_data = VMData {                                                   // Only one instance of this struct must exist
@@ -122,7 +98,7 @@ fn main() {
     info!("{}", if unsafe {CFG.AUTORUN()} { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
-        if i == 0 { idle_plugins(&plugins, &io) }
+        if i == 0 { plugins::idle(&plugins, &io) }
         if unsafe { CFG.stopped } { break }
         if unsafe { !CFG.is_running } { continue }
         if vms.size() > 0 {
@@ -136,5 +112,5 @@ fn main() {
         }
     }
 
-    remove_plugins(&plugins, &io);
+    plugins::remove(&plugins, &io);
 }
