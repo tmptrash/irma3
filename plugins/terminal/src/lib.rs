@@ -7,14 +7,13 @@ use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::TryRecvError;
 use std::{thread};
-use colored::*;
 use colored::Colorize;
 use share::io::IO;
 use share::io::Param;
 use share::io::events::{*};
-///
-/// Local variable of this module, which keeps thread instance
-///
+//
+// Local variable of this module, which keeps thread instance
+//
 thread_local!(static THREAD: Receiver<String> = create_thread());
 ///
 /// Local variable, which affects thread activeness
@@ -23,7 +22,7 @@ static mut THREAD_STOPPED: bool = false;
 ///
 /// Plugin API. initializes plugin
 ///
-#[no_mangle] fn init(io: &IO) {}
+#[no_mangle] fn init(_io: &IO) {}
 ///
 /// Plugin API. Do main work by haddling terminal commands and call core API
 ///
