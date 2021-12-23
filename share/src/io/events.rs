@@ -1,5 +1,6 @@
 //!
-//! Events list, which is used in IO module
+//! Events list, which is used in IO module. All these constants should be 
+//! with increasing index. EVENT_LAST should be the last index in a vector.
 //!
 ///
 /// Draws a dot in a world

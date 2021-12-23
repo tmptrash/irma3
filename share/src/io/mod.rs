@@ -63,8 +63,8 @@ mod tests {
     #[test]
     fn test_new() {
         let mut io = IO::new();
-        io.on(EVENT_RUN, |p: &Param| { unsafe { if let Param::Run(r) = p { BOOL_VAR = *r }} });
-        io.fire(EVENT_RUN, &Param::Run(true));
+        io.on(EVENT_RUN, |p: &Param| { unsafe { BOOL_VAR = true } });
+        io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { BOOL_VAR }, true);
     }
 }
