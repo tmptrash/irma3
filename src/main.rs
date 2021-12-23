@@ -22,14 +22,16 @@
 //! types, which give all the variety of forms in this virtual world. To run such interactions 
 //! (we also call them "run atoms") we use special [Virtual Machines](#Atomic-Virtual-Machines).
 //!
+use dlopen;
+#[macro_use]
+extern crate dlopen_derive;
+
 mod world;
 mod vm;
 mod cfg;
-mod utils;
-mod global;
-mod io;
 mod plugins;
 
+use dlopen::wrapper::{Container};
 use flexi_logger;
 use log::{*};
 use world::World;
@@ -38,12 +40,12 @@ use vm::vmdata::VMData;
 use vm::ret::Return;
 use cfg::Config;
 use vm::buf::MoveBuffer;
-use global::DIR_REV;
-use utils::vec::Vector;
-use io::IO;
-use io::Param;
-use io::events::{*};
-use plugins::terminal;
+use share::global::DIR_REV;
+use share::utils::vec::Vector;
+use share::io::IO;
+use share::io::Param;
+use share::io::events::{*};
+use plugins::Plugin;
 ///
 /// Global configuration, which is shared for entire app
 ///
@@ -58,22 +60,29 @@ fn init_api(io: &mut IO) {
 ///
 /// Init plugins of the core
 ///
-fn init_plugins(io: &mut IO) {
-    info!("  Init core plugins");
-    terminal::init(io);
+fn load_plugins(path: &str) -> Vec<Container<Plugin>> {
+    info!("  Load core plugins");
+    plugins::load(path).unwrap()
 }
 ///
-/// Destroy plugins of the core
+/// Inits plugins
 ///
-fn destroy_plugins(io: &IO) {
-    info!("  Destroy core plugins");
-    terminal::destroy(io);
+fn init_plugins(plugins: &Vec<Container<Plugin>>, io: &IO) {
+    info!("  Init core plugins");
+    for p in plugins.iter() { p.init(io) }
 }
 ///
 /// Call plugins idle() function to do their internal work
 ///
-fn idle_pugins(io: &IO) {
-    terminal::idle(io);
+fn idle_plugins(plugins: &Vec<Container<Plugin>>, io: &IO) {
+    for p in plugins.iter() { p.idle(io) }
+}
+///
+/// Destroy plugins of the core
+///
+fn remove_plugins(plugins: &Vec<Container<Plugin>>, io: &IO) {
+    info!("  Destroy core plugins");
+    for p in plugins { p.remove(io) }
 }
 ///
 /// Creates a list of VMs.
@@ -93,9 +102,10 @@ fn main() {
     flexi_logger::Logger::try_with_env().unwrap().format(flexi_logger::colored_opt_format).start().unwrap();              // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
     info!("Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust");
     info!("Init core");
-    let mut io  = IO::new();
+    let mut io = IO::new();
     init_api(&mut io);
-    init_plugins(&mut io);
+    let plugins = load_plugins(unsafe { CFG.PLUGINS_DIR() });
+    init_plugins(&plugins, &io);
     let mut vms = create_vms(unsafe { CFG.VM_AMOUNT() });
     info!("  Create world");
     let mut vm_data = VMData {                                                   // Only one instance of this struct must exist
@@ -112,7 +122,7 @@ fn main() {
     info!("{}", if unsafe {CFG.AUTORUN()} { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
-        if i == 0 { idle_pugins(&io) }
+        if i == 0 { idle_plugins(&plugins, &io) }
         if unsafe { CFG.stopped } { break }
         if unsafe { !CFG.is_running } { continue }
         if vms.size() > 0 {
@@ -126,5 +136,5 @@ fn main() {
         }
     }
 
-    destroy_plugins(&io);
+    remove_plugins(&plugins, &io);
 }

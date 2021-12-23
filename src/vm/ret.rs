@@ -2,7 +2,7 @@
 //! Return values enum. Is used in VM for running atoms and returning
 //! their run statuses
 //!
-use crate::global::Offs;
+use share::global::Offs;
 
 pub enum Return {
     Code(u8),

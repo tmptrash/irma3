@@ -1,1 +1,6 @@
 /target
+/plugins/terminal/target
+/share/target
+/Cargo.lock
+/plugins/terminal/Cargo.lock
+/share/Cargo.lock

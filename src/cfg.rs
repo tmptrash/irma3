@@ -3,7 +3,7 @@
 //! are read only (they are in upper case), some read write (they are in lover case).
 //!
 use getset::{CopyGetters, Getters};
-use crate::global::DIRS_LEN;
+use share::global::DIRS_LEN;
 use log::{*};
 ///
 /// Configuration related to atoms
@@ -67,6 +67,10 @@ pub struct Config {
     ///
     AUTORUN: bool,
     ///
+    /// Folder of plugins (.dll or .so files)
+    ///
+    PLUGINS_DIR: &'static str,
+    ///
     /// Current system run state
     ///
     pub is_running: bool,
@@ -96,6 +100,7 @@ impl Config {
             VM_AMOUNT: 1024,
             DIR_TO_OFFS: [-(WIDTH as i32) - 1, -(WIDTH as i32), -(WIDTH as i32) + 1, 1, (WIDTH as i32) + 1, (WIDTH as i32), (WIDTH as i32) - 1, -1],
             AUTORUN: false,
+            PLUGINS_DIR: "plugins",
             // read-write configuration
             is_running: false,
             stopped: false,

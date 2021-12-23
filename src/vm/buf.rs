@@ -3,8 +3,8 @@
 //! moving molecules. Buffer should be reused (singleton) in all VMs.
 //!
 use std::collections::HashSet;
-use crate::global::Offs;
-use crate::utils::stack::Stack;
+use share::global::Offs;
+use share::utils::stack::Stack;
 ///
 /// Buffer and stack of moving atoms, which are used by mov command.
 /// Depending on it's size we may move big or small molecules. See mov

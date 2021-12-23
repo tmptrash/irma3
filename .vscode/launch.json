@@ -27,7 +27,7 @@
                 // from assembler source code during debugging. Details:
                 // https://github.com/vadimcn/vscode-lldb/issues/204#issue-484923630
                 //
-                "/rustc/c8dfcfe046a7680554bf4eb612bad840e7631c4b/": "${env:USERPROFILE}/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/src/rust"
+                "/rustc/f1edd0429582dd29cccacaf50fd134b05593bd9c/": "${env:USERPROFILE}/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/src/rust"
             }
         },
         {

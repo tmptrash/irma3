@@ -7,9 +7,9 @@ use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::TryRecvError;
 use std::{thread};
-use crate::io::IO;
+use share::io::IO;
 //
-// Local variable of this module, which keeps thread object
+// Local variable of this module, which keeps thread instance
 //
 thread_local!(static THREAD: Receiver<String> = create_thread());
 ///
@@ -19,11 +19,11 @@ static mut STOPPED: bool = false;
 ///
 /// Plugin API. initializes plugin
 ///
-pub fn init(_io: &IO) {}
+#[no_mangle] fn init(_io: &IO) {}
 ///
 /// Plugin API. Do main work by haddling terminal commands and call core API
 ///
-pub fn idle(io: &IO) {
+#[no_mangle] pub fn idle(_io: &IO) {
     match THREAD.with(|rec| rec.try_recv()) {
         Ok(key) => print!("Received: {}", key),
         Err(TryRecvError::Empty) => (),
@@ -33,7 +33,7 @@ pub fn idle(io: &IO) {
 ///
 /// Plugin API. Destroys plugin. 
 ///
-pub fn destroy(_io: &IO) {
+#[no_mangle] pub fn remove(_io: &IO) {
     unsafe { STOPPED = true }
 }
 

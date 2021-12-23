@@ -9,8 +9,8 @@ pub mod vmdata;
 pub mod ret;
 
 use log::{*};
-use crate::global::Atom;
-use crate::global::{*};
+use share::global::Atom;
+use share::global::{*};
 use atom::{*};
 use ret::Return;
 use vmdata::VMData;

@@ -1,7 +1,7 @@
 //!
 //! Part of VM module. Contains atom related stuff.
 //! 
-use crate::global::{*};
+use share::global::{*};
 ///
 /// Checks if atom is empty (just empty world's cell) or not
 ///

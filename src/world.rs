@@ -3,13 +3,13 @@
 //! this module and atom.rs is that this module manages dots in a world
 //! and know nothing about atoms and their inner structure.
 //! 
-use crate::utils;
-use crate::global::Atom;
-use crate::global::Offs;
-use crate::global::Dir;
-use crate::global::ATOM_EMPTY;
-use crate::global::DIRS_LEN;
-use crate::global::I;
+use share::utils;
+use share::global::Atom;
+use share::global::Offs;
+use share::global::Dir;
+use share::global::ATOM_EMPTY;
+use share::global::DIRS_LEN;
+use share::global::I;
 ///
 /// Structure of the world. It consists of cells and atoms inside them
 ///
