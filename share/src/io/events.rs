@@ -12,7 +12,7 @@ pub const EVENT_RUN:     usize = 1;
 ///
 /// Stops the system and exits
 ///
-pub const EVENT_EXIT:    usize = 2;
+pub const EVENT_QUIT:    usize = 2;
 ///
 /// Should be a last event. Every time you add new event in this list,
 /// please update this number

@@ -31,6 +31,7 @@ mod plugins;
 extern crate dlopen_derive;
 use flexi_logger;
 use log::{*};
+use colored::Colorize;
 use world::World;
 use vm::VM;
 use vm::vmdata::VMData;
@@ -40,7 +41,6 @@ use vm::buf::MoveBuffer;
 use share::global::DIR_REV;
 use share::utils::vec::Vector;
 use share::io::IO;
-use share::io::Param;
 use share::io::events::{*};
 ///
 /// Global configuration, which is shared for entire app. The meaning of this is
@@ -54,9 +54,12 @@ static mut CFG: Config = Config::new();
 ///
 fn init_api(io: &mut IO) {
     info!("  Init core API");
-    io.on(EVENT_RUN,  |p: &Param|  { if let Param::Run(run) = p { unsafe { CFG.is_running = *run } } });
-    io.on(EVENT_EXIT, |_p: &Param| {
-        info!("Quit the system");
+    io.on(EVENT_RUN, |_|  {
+        debug!("Run command catched");
+        unsafe { CFG.is_running = !CFG.is_running };
+    });
+    io.on(EVENT_QUIT, |_| {
+        debug!("Quit command catched");
         unsafe { CFG.stopped = true }
     });
 }
@@ -76,7 +79,7 @@ fn create_vms(amount: usize) -> Vector<VM> {
 ///
 fn main() {
     flexi_logger::Logger::try_with_env_or_str("info").unwrap().format(flexi_logger::colored_opt_format).start().unwrap(); // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
-    info!("Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust");
+    println!("\n{}\n", "Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust".green());
     info!("Init core");
     let mut io = IO::new();
     init_api(&mut io);

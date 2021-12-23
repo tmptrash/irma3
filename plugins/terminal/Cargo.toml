@@ -8,3 +8,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 share = { path = "../../share" }
+colored = "2"
