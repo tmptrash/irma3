@@ -29,7 +29,6 @@ mod plugins;
 
 #[macro_use]
 extern crate dlopen_derive;
-use flexi_logger;
 use log::{*};
 use colored::Colorize;
 use world::World;
@@ -81,7 +80,7 @@ fn main() {
     flexi_logger::Logger::try_with_env_or_str("info").unwrap().format(flexi_logger::colored_opt_format).start().unwrap(); // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
     println!("\n{}\n", "Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust".green());
     info!("Init core");
-    let mut io = IO::new();
+    let mut io = IO::new(EVENT_LAST);
     init_api(&mut io);
     let plugins = plugins::load(unsafe { CFG.PLUGINS_DIR() });
     plugins::init(&plugins, &io);

@@ -5,7 +5,6 @@ pub mod events;
 
 use crate::global::Offs;
 use crate::global::Atom;
-use events::{*};
 ///
 /// Shorthand for callback function
 ///
@@ -26,9 +25,9 @@ pub struct IO {
 }
 
 impl IO {
-    pub fn new() -> IO {
+    pub fn new(events: usize) -> IO {
         let mut io = IO { events: Vec::new() };
-        for _i in 0..EVENT_LAST { io.events.push(Vec::new()) }
+        for _i in 0..events { io.events.push(Vec::new()) }
         io
     }
     ///
@@ -62,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let mut io = IO::new();
+        let mut io = IO::new(EVENT_LAST);
         io.on(EVENT_RUN, |p: &Param| { unsafe { BOOL_VAR = true } });
         io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { BOOL_VAR }, true);

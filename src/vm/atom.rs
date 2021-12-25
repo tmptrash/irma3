@@ -37,19 +37,19 @@ pub fn get_dir1(atom: Atom) -> Dir { (atom & ATOM_DIR1_MASK >> ATOM_DIR1_SHIFT) 
 ///
 /// Sets if atom direction. All other bits keep the same
 ///
-pub fn set_dir1(atom: &mut Atom, dir: Dir) { *atom = (*atom & ATOM_DIR1_UNMASK) | ((dir as Atom) << ATOM_DIR1_SHIFT) }
+//pub fn set_dir1(atom: &mut Atom, dir: Dir) { *atom = (*atom & ATOM_DIR1_UNMASK) | ((dir as Atom) << ATOM_DIR1_SHIFT) }
 ///
 /// Checks if atom has dir1 bond
 ///
-pub fn has_dir1_bond(atom: Atom) -> bool { atom & ATOM_DIR1_BOND_MASK > 0 }
+//pub fn has_dir1_bond(atom: Atom) -> bool { atom & ATOM_DIR1_BOND_MASK > 0 }
 ///
 /// Sets dir1 bond bit (set to 1)
 ///
-pub fn set_dir1_bond(atom: &mut Atom) { *atom |= ATOM_DIR1_BOND_MASK }
+//pub fn set_dir1_bond(atom: &mut Atom) { *atom |= ATOM_DIR1_BOND_MASK }
 ///
 /// Clears dir1 bond bit (set to 0)
 ///
-pub fn reset_dir1_bond(atom: &mut Atom) { *atom &= ATOM_DIR1_BOND_UNMASK }
+//pub fn reset_dir1_bond(atom: &mut Atom) { *atom &= ATOM_DIR1_BOND_UNMASK }
 ///
 /// Returns then atom direction
 ///

@@ -15,9 +15,7 @@ pub fn alloc<T>(len: usize) -> Vec<T> {
 /// Zeroes vector.
 ///
 pub fn zero<T: Copy>(vec: &mut Vec<T>, zero: T) {
-    for i in 0..vec.len() {
-        vec[i] = zero;
-    }
+    for val in vec.iter_mut() { *val = zero }
 }
 
 #[cfg(test)]

@@ -8,7 +8,6 @@ pub mod atom;
 pub mod vmdata;
 pub mod ret;
 
-use log::{*};
 use share::global::Atom;
 use share::global::{*};
 use atom::{*};
@@ -17,7 +16,7 @@ use vmdata::VMData;
 //
 // map between atom type number and handler fn index. Should be in stack
 //
-const ATOMS_MAP: &'static [fn(&mut VM, Atom, &mut VMData) -> Return] = &[
+const ATOMS_MAP: &[fn(&mut VM, Atom, &mut VMData) -> Return] = &[
     VM::atom_empty,  // 0 - must be an empty fn. Means empty cell or no atom
     VM::atom_mov,
     VM::atom_fix,

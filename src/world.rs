@@ -49,10 +49,10 @@ impl World {
         Some(
             World {
                 cells: mem,
-                width: width,
-                height: height,
-                size: size,
-                dirs: dirs
+                width,
+                height,
+                size,
+                dirs
             }
         )
     }
@@ -62,14 +62,14 @@ impl World {
     /// that two offsets are near each other (distance == 1) and within
     /// the world
     ///
-    pub fn get_dir(offs0: Offs, offs1: Offs) -> Dir {
-        // 0, 1, 2
-        if offs1 < offs0 - 1 {}
-        // 4, 5, 6
-        else if offs1 > offs0 + 1 {}
-        else if offs0 - 1 == offs1 { return 7 }
-        3
-    }
+    // pub fn get_dir(offs0: Offs, offs1: Offs) -> Dir {
+    //     // 0, 1, 2
+    //     if offs1 < offs0 - 1 {}
+    //     // 4, 5, 6
+    //     else if offs1 > offs0 + 1 {}
+    //     else if offs0 - 1 == offs1 { return 7 }
+    //     3
+    // }
     ///
     /// Returns new offset by start offset and direction
     ///

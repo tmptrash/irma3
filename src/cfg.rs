@@ -4,7 +4,6 @@
 //!
 use getset::{CopyGetters, Getters};
 use share::global::DIRS_LEN;
-use log::{*};
 ///
 /// Configuration related to atoms
 ///

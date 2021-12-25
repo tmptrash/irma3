@@ -28,7 +28,7 @@ pub fn load(path: &str) -> Vec<Container<Plugin>> {
 /// Inits plugins. This is a place where plugins may add their listeners to the 
 /// Core IO object
 ///
-pub fn init(plugins: &Vec<Container<Plugin>>, io: &IO) {
+pub fn init(plugins: &[Container<Plugin>], io: &IO) {
     info!("  Init core plugins");
     for p in plugins.iter() { p.init(io) }
 }
@@ -36,12 +36,12 @@ pub fn init(plugins: &Vec<Container<Plugin>>, io: &IO) {
 /// Calls plugins idle() function to do their internal work. On every iteration
 /// Core calls this function for every plugin.
 ///
-pub fn idle(plugins: &Vec<Container<Plugin>>, io: &IO) { for p in plugins.iter() { p.idle(io) } }
+pub fn idle(plugins: &[Container<Plugin>], io: &IO) { for p in plugins.iter() { p.idle(io) } }
 ///
 /// Destroy all plugins. Destroy means removing of Container<Plugin>
 /// structure for plugins.
 ///
-pub fn remove(plugins: &Vec<Container<Plugin>>, io: &IO) {
+pub fn remove(plugins: &[Container<Plugin>], io: &IO) {
     info!("  Destroy core plugins");
     for p in plugins { p.remove(io) }
 }
