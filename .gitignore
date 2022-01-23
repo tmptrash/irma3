@@ -4,4 +4,5 @@
 /share/target
 /Cargo.lock
 /plugins/terminal/Cargo.lock
+/plugins/gui/Cargo.lock
 /share/Cargo.lock
