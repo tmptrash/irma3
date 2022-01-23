@@ -24,7 +24,6 @@
 //!
 mod world;
 mod vm;
-mod cfg;
 mod plugins;
 
 #[macro_use]
@@ -35,8 +34,8 @@ use world::World;
 use vm::VM;
 use vm::vmdata::VMData;
 use vm::ret::Return;
-use cfg::Config;
 use vm::buf::MoveBuffer;
+use share::cfg::Config;
 use share::global::DIR_REV;
 use share::utils::vec::Vector;
 use share::io::IO;
@@ -83,7 +82,7 @@ fn main() {
     let mut io = IO::new(EVENT_LAST);
     init_api(&mut io);
     let plugins = plugins::load(unsafe { CFG.PLUGINS_DIR() });
-    plugins::init(&plugins, &io);
+    plugins::init(&plugins, &io, unsafe { &mut CFG });
     let mut vms = create_vms(unsafe { CFG.VM_AMOUNT() });
     info!("  Create world");
     let mut vm_data = VMData {                                                   // Only one instance of this struct must exist

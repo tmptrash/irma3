@@ -3,7 +3,7 @@
 //! are read only (they are in upper case), some read write (they are in lover case).
 //!
 use getset::{CopyGetters, Getters};
-use share::global::DIRS_LEN;
+use crate::global::DIRS_LEN;
 ///
 /// Configuration related to atoms
 ///

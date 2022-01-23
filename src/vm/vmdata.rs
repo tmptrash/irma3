@@ -3,7 +3,7 @@
 //!
 use crate::world::World;
 use crate::vm::buf::MoveBuffer;
-use crate::cfg::AtomConfig;
+use share::cfg::AtomConfig;
 use share::global::Dir;
 use share::global::DIRS_LEN;
 use share::io::IO;

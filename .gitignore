@@ -1,5 +1,6 @@
 /target
 /plugins/terminal/target
+/plugins/gui/target
 /share/target
 /Cargo.lock
 /plugins/terminal/Cargo.lock

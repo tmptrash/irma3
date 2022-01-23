@@ -7,12 +7,13 @@ use log::{*};
 use std::fs;
 use std::env;
 use share::io::IO;
+use share::cfg::Config;
 ///
 /// Plugin API. All required functions of the plugin
 ///
 #[derive(WrapperApi)]
 pub struct Plugin {
-    init: fn(io: &IO),
+    init: fn(io: &IO, cfg: &mut Config),
     idle: fn(io: &IO),
     remove: fn(io: &IO)
 }
@@ -28,9 +29,9 @@ pub fn load(path: &str) -> Vec<Container<Plugin>> {
 /// Inits plugins. This is a place where plugins may add their listeners to the 
 /// Core IO object
 ///
-pub fn init(plugins: &[Container<Plugin>], io: &IO) {
+pub fn init(plugins: &[Container<Plugin>], io: &IO, cfg: &mut Config) {
     info!("  Init core plugins");
-    for p in plugins.iter() { p.init(io) }
+    for p in plugins.iter() { p.init(io, cfg) }
 }
 ///
 /// Calls plugins idle() function to do their internal work. On every iteration
