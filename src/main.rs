@@ -49,6 +49,14 @@ use plugins::Plugins;
 ///
 static mut CFG: Config = Config::new();
 ///
+/// Returns constant configuration value by property
+///
+macro_rules! cfgc { ($prop:ident) => { unsafe { CFG.$prop() } } }
+///
+/// Returns writable configuration value by property
+///
+macro_rules! cfgv { ($prop:ident) => { unsafe { CFG.$prop } } }
+///
 /// Shows a welcome string
 ///
 fn show_welcome() {
@@ -105,21 +113,21 @@ fn main() {
 
     let io = init();
     let mut plugins = Plugins::new(&io);
-    let mut vms = create_vms(u! { CFG.VM_AMOUNT() });
+    let mut vms = create_vms(cfgc!(VM_AMOUNT));
     let mut vm_data = create_vmdata(&io);
 
-    plugins.load(u! { CFG.PLUGINS_DIR() });
+    plugins.load(cfgc!(PLUGINS_DIR));
     plugins.init(u! { &mut CFG });
     //
     // Main loop
     //
-    u! { if CFG.AUTORUN() { CFG.is_running = CFG.AUTORUN() } }
-    inf!("{}", if u! {CFG.AUTORUN()} { "Run" } else { "Waiting for a command..." });
+    if cfgc!(AUTORUN) { u!{CFG.is_running = cfgc!(AUTORUN) } }
+    inf!("{}", if cfgc!(AUTORUN) { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
         if i == 0 { plugins.idle() }
-        if u! { CFG.stopped } { break }
-        if u! { !CFG.is_running } { continue }
+        if cfgv!(stopped) { break }
+        if !cfgc!(is_running) { continue }
         if vms.size() > 0 {
             if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
                 if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
