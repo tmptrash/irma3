@@ -17,6 +17,14 @@ pub fn alloc<T>(len: usize) -> Vec<T> {
 pub fn zero<T: Copy>(vec: &mut Vec<T>, zero: T) {
     for val in vec.iter_mut() { *val = zero }
 }
+///
+/// Alias of unsafe {}
+///
+#[macro_export] macro_rules! u {
+    ($arg:expr) => {
+        unsafe { $arg }
+    }
+}
 
 #[cfg(test)]
 mod tests {

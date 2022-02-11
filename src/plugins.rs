@@ -18,59 +18,76 @@ pub struct Plugin {
     remove: fn(io: &IO)
 }
 ///
-/// Loads all plugins in configured folder. Returns a vector of dynamic libraries
-/// with an API (function pointers).
+/// Container of all loaded plugins
 ///
-pub fn load(path: &str) -> Vec<Container<Plugin>> {
-    info!("  Load core plugins");
-    load_libs(path)
+pub struct Plugins<'a> {
+    plugins: Vec<Container<Plugin>>,
+    names: Vec<String>,
+    io: &'a IO
 }
-///
-/// Inits plugins. This is a place where plugins may add their listeners to the 
-/// Core IO object
-///
-pub fn init(plugins: &[Container<Plugin>], io: &IO, cfg: &mut Config) {
-    info!("  Init core plugins");
-    for p in plugins.iter() { p.init(io, cfg) }
-}
-///
-/// Calls plugins idle() function to do their internal work. On every iteration
-/// Core calls this function for every plugin.
-///
-pub fn idle(plugins: &[Container<Plugin>], io: &IO) { for p in plugins.iter() { p.idle(io) } }
-///
-/// Destroy all plugins. Destroy means removing of Container<Plugin>
-/// structure for plugins.
-///
-pub fn remove(plugins: &[Container<Plugin>], io: &IO) {
-    info!("  Destroy core plugins");
-    for p in plugins { p.remove(io) }
-}
-///
-/// Finds all plugins in some folder and returns a vector of them
-///
-fn load_libs(folder: &str) -> Vec<Container<Plugin>> {
-    let mut plugins = Vec::<Container<Plugin>>::new();
-
-    info!("    Looking plugins in \"{}\\{}\"", env::current_dir().unwrap().as_path().display(), folder);
-    let files = fs::read_dir(folder);
-    if let Result::Err(_e) = files {
-        warn!("      Folder \"{}\" is incorrect or doesn't exist", folder);
-        return plugins;
-    }
-
-    for f in files.unwrap() {
-        let plugin = f.unwrap();
-        if plugin.path().is_dir() { continue }
-
-        info!("    Found plugin: \"{}\"", plugin.path().display());
-        let lib = unsafe { Container::load(plugin.path()) };
-        if lib.is_err() {
-            warn!("      Invalid plugin: \"{}\"", plugin.path().display());
-            continue;
+impl<'a> Plugins<'a> {
+    pub fn new(io: &IO) -> Plugins {
+        Plugins {
+            plugins: Vec::<Container<Plugin>>::new(),
+            names: Vec::<String>::new(),
+            io
         }
-        plugins.push(lib.unwrap());
     }
+    ///
+    /// Loads all plugins in configured folder. Returns a vector of dynamic libraries
+    /// with an API (function pointers).
+    ///
+    pub fn load(&mut self, folder: &str) {
+        sec!("Load core plugins");
+        inf!("Looking plugins in \"{}\\{}\"", env::current_dir().unwrap().as_path().display(), folder);
+        let files = fs::read_dir(folder);
+        if let Result::Err(_e) = files {
+            warn!("Folder \"{}\" is incorrect or doesn't exist", folder);
+            return;
+        }
 
-    plugins
+        for f in files.unwrap() {
+            let plugin = f.unwrap();
+            if plugin.path().is_dir() { continue }
+
+            inf!("Found plugin: \"{}\"", plugin.path().display());
+            match u! { Container::load(plugin.path()) } {
+                Err(_) => {
+                    warn!("Invalid plugin: \"{}\"", plugin.path().display());
+                    continue;
+                },
+                Ok(p) => {
+                    self.names.push(plugin.path().display().to_string());
+                    self.plugins.push(p);
+                }
+            }
+        }
+    }
+    ///
+    /// Inits plugins. This is a place where plugins may add their listeners to the 
+    /// Core IO object
+    ///
+    pub fn init(&self, cfg: &mut Config) {
+        sec!("Init core plugins");
+        for (i , p)in self.plugins.iter().enumerate() {
+            inf!("Init plugin \"{}\"", self.names.get(i).unwrap());
+            p.init(self.io, cfg);
+        }
+    }
+    ///
+    /// Calls plugins idle() function to do their internal work. On every iteration
+    /// Core calls this function for every plugin.
+    ///
+    pub fn idle(&self) { for p in self.plugins.iter() { p.idle(self.io) } }
+    ///
+    /// Destroy all plugins. Destroy means removing of Container<Plugin>
+    /// structure for plugins.
+    ///
+    pub fn remove(&self) {
+        sec!("Destroy core plugins");
+        for (i, p) in self.plugins.iter().enumerate() {
+            inf!("Remove plugin \"{}\"", self.names.get(i).unwrap());
+            p.remove(self.io);
+        }
+    }
 }

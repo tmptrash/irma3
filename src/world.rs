@@ -3,6 +3,9 @@
 //! this module and atom.rs is that this module manages dots in a world
 //! and know nothing about atoms and their inner structure.
 //! 
+use std::mem::size_of;
+
+use log::{*};
 use share::utils;
 use share::global::Atom;
 use share::global::Offs;
@@ -42,8 +45,10 @@ impl World {
     /// @param len - amount of atoms in a world
     ///
     pub fn new(width: usize, height: usize, dirs: [i32; 8]) -> Option<World> {
+        sec!("Create world");
         let size = width * height;
         if size < 1 { return None }
+        inf!("Size: {}x{} atoms, {:?}b", width, height, size * size_of::<Atom>());
         let mut mem = utils::alloc(size);
         utils::zero(&mut mem, 0);
         Some(

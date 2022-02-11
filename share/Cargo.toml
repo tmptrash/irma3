@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 dlopen = "0.1"
 getset = "0.1.1"
+time = "0.3.7"
+flexi_logger = "0.22"
+log = "0.4"

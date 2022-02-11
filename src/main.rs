@@ -26,8 +26,8 @@ mod world;
 mod vm;
 mod plugins;
 
-#[macro_use]
-extern crate dlopen_derive;
+#[macro_use] extern crate dlopen_derive;
+#[macro_use] extern crate share;
 use log::{*};
 use colored::Colorize;
 use world::World;
@@ -40,6 +40,8 @@ use share::global::DIR_REV;
 use share::utils::vec::Vector;
 use share::io::IO;
 use share::io::events::{*};
+use share::logger;
+use plugins::Plugins;
 ///
 /// Global configuration, which is shared for entire app. The meaning of this is
 /// in ability to change RW properties in real time to affect application without
@@ -47,61 +49,77 @@ use share::io::events::{*};
 ///
 static mut CFG: Config = Config::new();
 ///
+/// Shows a welcome string
+///
+fn show_welcome() {
+    println!("\n{}\n", "Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust".green());
+}
+///
 /// Inits core API. This is a place where Core adds listeners to different events,
 /// which are fired from outside of the core. For example, from a plugin.
 ///
-fn init_api(io: &mut IO) {
-    info!("  Init core API");
+fn init() -> IO {
+    let mut io = IO::new(EVENT_LAST);
+    
+    logger::init();
+    sec!("Init core API");
     io.on(EVENT_RUN, |_|  {
-        debug!("Run command catched");
-        unsafe { CFG.is_running = !CFG.is_running };
+        dbg!("Run command catched");
+        u!{ CFG.is_running = !CFG.is_running };
     });
     io.on(EVENT_QUIT, |_| {
-        debug!("Quit command catched");
-        unsafe { CFG.stopped = true }
+        dbg!("Quit command catched");
+        u! { CFG.stopped = true }
     });
+
+    io
 }
 ///
 /// Creates a list of VMs.
 ///
 fn create_vms(amount: usize) -> Vector<VM> {
-    info!("  Create VMs");
+    sec!("Create VMs");
     let mut vec = Vector::new(amount);
     for _i in 0..amount { vec.add(VM::new(0, 0)); }
-    info!("    Created {} VMs", amount);
+    inf!("Created {} VMs", amount);
     vec
+}
+///
+/// Creates VMData struct, which is used during VM work
+///
+fn create_vmdata(io: &IO) -> VMData {
+    VMData {
+        world: u! {World::new(CFG.WIDTH(), CFG.HEIGHT(), CFG.DIR_TO_OFFS()).unwrap()},
+        buf: MoveBuffer::new(u! {CFG.MOV_BUF_SIZE()}),
+        dirs_rev: DIR_REV,
+        atoms_cfg: u! { &CFG.atoms },
+        io
+    }
 }
 ///
 /// Entry point of application. It creates global Configuration, World and list of VMs, logger
 /// and other Core components.
 ///
 fn main() {
-    flexi_logger::Logger::try_with_env_or_str("info").unwrap().format(flexi_logger::colored_opt_format).start().unwrap(); // use %RUST_LOG% to set log level. e.g.: SET RUST_LOG=info
-    println!("\n{}\n", "Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust".green());
-    info!("Init core");
-    let mut io = IO::new(EVENT_LAST);
-    init_api(&mut io);
-    let plugins = plugins::load(unsafe { CFG.PLUGINS_DIR() });
-    plugins::init(&plugins, &io, unsafe { &mut CFG });
-    let mut vms = create_vms(unsafe { CFG.VM_AMOUNT() });
-    info!("  Create world");
-    let mut vm_data = VMData {                                                   // Only one instance of this struct must exist
-        world: unsafe {World::new(CFG.WIDTH(), CFG.HEIGHT(), CFG.DIR_TO_OFFS()).unwrap()},
-        buf: MoveBuffer::new(unsafe {CFG.MOV_BUF_SIZE()}),
-        dirs_rev: DIR_REV,
-        atoms_cfg: unsafe { &CFG.atoms },
-        io: &io
-    };
+    show_welcome();
+
+    let io = init();
+    let mut plugins = Plugins::new(&io);
+    let mut vms = create_vms(u! { CFG.VM_AMOUNT() });
+    let mut vm_data = create_vmdata(&io);
+
+    plugins.load(u! { CFG.PLUGINS_DIR() });
+    plugins.init(u! { &mut CFG });
     //
     // Main loop
     //
-    unsafe { if CFG.AUTORUN() { CFG.is_running = CFG.AUTORUN() } }
-    info!("{}", if unsafe {CFG.AUTORUN()} { "Run" } else { "Waiting for a command..." });
+    u! { if CFG.AUTORUN() { CFG.is_running = CFG.AUTORUN() } }
+    inf!("{}", if u! {CFG.AUTORUN()} { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
-        if i == 0 { plugins::idle(&plugins, &io) }
-        if unsafe { CFG.stopped } { break }
-        if unsafe { !CFG.is_running } { continue }
+        if i == 0 { plugins.idle() }
+        if u! { CFG.stopped } { break }
+        if u! { !CFG.is_running } { continue }
         if vms.size() > 0 {
             if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
                 if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
@@ -113,5 +131,5 @@ fn main() {
         }
     }
 
-    plugins::remove(&plugins, &io);
+    plugins.remove();
 }
