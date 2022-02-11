@@ -65,6 +65,6 @@ fn run_command(cmd: &str, io: &IO) {
     q, quit   Quit the system
     r, run    Run or stop the system
     h, help   Show this message".yellow()),
-        _      => { println!("{}", "Unknown command. Type \"help\" for details".red()) }
+        _      => { println!("{}", "Unknown command. Type \"help\" for details".red().bold()) }
     }
 }

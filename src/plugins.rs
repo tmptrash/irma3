@@ -42,7 +42,7 @@ impl<'a> Plugins<'a> {
         inf!("Looking plugins in \"{}\\{}\"", env::current_dir().unwrap().as_path().display(), folder);
         let files = fs::read_dir(folder);
         if let Result::Err(_e) = files {
-            warn!("Folder \"{}\" is incorrect or doesn't exist", folder);
+            err!("Folder \"{}\" is incorrect or doesn't exist", folder);
             return;
         }
 
@@ -53,7 +53,7 @@ impl<'a> Plugins<'a> {
             inf!("Found plugin: \"{}\"", plugin.path().display());
             match u! { Container::load(plugin.path()) } {
                 Err(_) => {
-                    warn!("Invalid plugin: \"{}\"", plugin.path().display());
+                    err!("Invalid plugin: \"{}\"", plugin.path().display());
                     continue;
                 },
                 Ok(p) => {

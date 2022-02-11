@@ -2,6 +2,7 @@
 //! A part of Virtual Machine module. Implements buffer, which is used for
 //! moving molecules. Buffer should be reused (singleton) in all VMs.
 //!
+use log::{*};
 use std::collections::HashSet;
 use share::global::Offs;
 use share::utils::stack::Stack;
@@ -21,6 +22,7 @@ impl MoveBuffer {
     /// this buffer. It should be created only once.
     ///
     pub fn new(size: usize) -> MoveBuffer {
+        sec!("Create MoveBuffer of size {}", size);
         MoveBuffer {
             buf: HashSet::new(),
             stack: Stack::new(size)

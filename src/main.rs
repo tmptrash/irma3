@@ -63,6 +63,12 @@ fn show_welcome() {
     println!("\n{}\n", "Welcome to irma4 v0.1 - Atomic Artificial Life Simulator in Rust".green());
 }
 ///
+/// Shows bye message
+///
+fn show_bye() {
+    println!("\n{}\n", "Bye".green());
+}
+///
 /// Inits core API. This is a place where Core adds listeners to different events,
 /// which are fired from outside of the core. For example, from a plugin.
 ///
@@ -121,6 +127,7 @@ fn main() {
     //
     // Main loop
     //
+    inf!("Run main loop");
     if cfgc!(AUTORUN) { u!{CFG.is_running = cfgc!(AUTORUN) } }
     inf!("{}", if cfgc!(AUTORUN) { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
@@ -140,4 +147,5 @@ fn main() {
     }
 
     plugins.remove();
+    show_bye();
 }
