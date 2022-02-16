@@ -16,6 +16,10 @@ pub const ATOM_COLORS: [[u8; 4]; 8] = [
     [0,   0,   0,     0]                       // no atom | empty cell | black pixel
 ];
 ///
+/// Color for clear screen operation
+///
+pub const BLACK_COLOR: [f32; 4] = [0.0; 4];
+///
 /// Internal GUI plugin data
 ///
 pub struct Gui {

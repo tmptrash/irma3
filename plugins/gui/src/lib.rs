@@ -11,6 +11,8 @@ extern crate image as im;
 extern crate vecmath;
 
 use global::ATOM_COLORS;
+use global::BLACK_COLOR;
+use piston_window::Event;
 use piston_window::TextureContext;
 use piston_window::PistonWindow;
 use piston_window::WindowSettings;
@@ -47,14 +49,7 @@ static mut GUI: Option<Gui> = None;
     let win = &mut gui_ref.win;
     if let Some(e) = win.next() {
         if e.render_args().is_some() {
-            gui_ref.texture.update(&mut gui_ref.texture_ctx, &gui_ref.canvas).unwrap();
-            win.draw_2d(&e, |c, g, device| {
-                clear([1.0; 4], g);
-                c.zoom(gui_ref.zoom);
-                // Update texture before rendering.
-                gui_ref.texture_ctx.encoder.flush(device);
-                image(&gui_ref.texture, c.transform, g);
-            });
+            render(&e, gui_ref);
         }
     }
 }
@@ -113,5 +108,18 @@ fn add_listeners(io: &mut IO) {
             let y = offs as u32 / width;
             gui_ref.canvas.put_pixel(x, y, im::Rgba(ATOM_COLORS[get_type(atom) as usize]));
         }
+    });
+}
+///
+/// Rendering one frame
+///
+fn render(e: &Event, gui: &mut Gui) {
+    gui.texture.update(&mut gui.texture_ctx, &gui.canvas).unwrap();
+    gui.win.draw_2d(e, |c, g, device| {
+        clear(BLACK_COLOR, g);
+        c.zoom(gui.zoom);
+        // Update texture before rendering.
+        gui.texture_ctx.encoder.flush(device);
+        image(&gui.texture, c.transform, g);
     });
 }
