@@ -47,7 +47,7 @@ use plugins::Plugins;
 /// in ability to change RW properties in real time to affect application without
 /// rerun
 ///
-static mut CFG: Config = Config::new();
+pub static mut CFG: Config = Config::new();
 ///
 /// Shows a welcome string
 ///
@@ -64,19 +64,19 @@ fn show_bye() {
 /// Inits core API. This is a place where Core adds listeners to different events,
 /// which are fired from outside of the core. For example, from a plugin.
 ///
-fn init() -> IO {
-    let mut io = IO::new(EVENT_LAST);
+fn init() -> IO<'static> {
+    let mut io = IO::new(EVENT_LAST, unsafe { &CFG });
     
     logger::init();
     sec!("Init core API");
-    io.on(EVENT_RUN, Box::new(|_|  {
+    io.on(EVENT_RUN, |_|  {
         dbg!("Run command catched");
         u!{ CFG.is_running = !CFG.is_running };
-    }));
-    io.on(EVENT_QUIT, Box::new(|_| {
+    });
+    io.on(EVENT_QUIT, |_| {
         dbg!("Quit command catched");
         u! { CFG.stopped = true }
-    }));
+    });
 
     io
 }
@@ -93,7 +93,7 @@ fn create_vms(amount: usize) -> Vector<VM> {
 ///
 /// Creates VMData struct, which is used during VM work
 ///
-fn create_vmdata(io: &IO) -> VMData {
+fn create_vmdata<'a>(io: &'a IO) -> VMData<'a, 'a> {
     VMData {
         world: u! {World::new(CFG.WIDTH(), CFG.HEIGHT(), CFG.DIR_TO_OFFS()).unwrap()},
         buf: MoveBuffer::new(u! {CFG.MOV_BUF_SIZE()}),
@@ -114,7 +114,7 @@ fn main() {
     let mut plugins = Plugins::new();
     
     plugins.load(cfg.PLUGINS_DIR());
-    plugins.init(&mut io, cfg);
+    plugins.init(&mut io);
 
     let mut vms = create_vms(cfg.VM_AMOUNT());
     let mut vm_data = create_vmdata(&io);

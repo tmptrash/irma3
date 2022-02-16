@@ -30,5 +30,5 @@ pub struct VMData<'a, 'b> {
     ///
     /// Reference to IO mechanism
     ///
-    pub io: &'b IO
+    pub io: &'b IO<'b>
 }

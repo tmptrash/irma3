@@ -5,14 +5,21 @@ pub mod events;
 
 use crate::global::Offs;
 use crate::global::Atom;
+use crate::cfg::Config;
 ///
 /// Shorthand for callback function
 ///
-pub type Callback = Box<dyn Fn(&Param)>;
+pub type Callback = fn(&Params);
+///
+/// Describes parameters of IO events
+///
+pub struct Params<'a> {
+    pub param: Param,
+    pub cfg: &'a Config
+}
 ///
 /// Enum for different event parameters types
 ///
-#[derive(Clone, Copy)]
 pub enum Param {
     None,                                                       // No parameters
     SetDot(Offs, Atom),                                         // Draw atom by offset
@@ -20,13 +27,14 @@ pub enum Param {
 ///
 /// Event bus object. Holds all listeners by event
 ///
-pub struct IO {
-    events: Vec<Vec<Callback>>
+pub struct IO<'a> {
+    events: Vec<Vec<Callback>>,
+    pub cfg: &'a Config
 }
 
-impl IO {
-    pub fn new(events: usize) -> IO {
-        let mut io = IO { events: Vec::new() };
+impl<'a> IO<'a> {
+    pub fn new(events: usize, cfg: &Config) -> IO {
+        let mut io = IO { events: Vec::new(), cfg };
         for _i in 0..events { io.events.push(Vec::new()) }
         io
     }
@@ -47,23 +55,26 @@ impl IO {
     ///
     /// Fires an event with parameter
     ///
-    pub fn fire(&self, event: usize, p: &Param) {
+    pub fn fire(&self, event: usize, p: &Params) {
         for cb in &self.events[event] { cb(p) }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::cfg::Config;
     use crate::io::Param;
+    use crate::io::Params;
     use crate::io::IO;
     use crate::io::events::{*};
     static mut BOOL_VAR: bool = false;
 
     #[test]
     fn test_new() {
-        let mut io = IO::new(EVENT_LAST);
-        io.on(EVENT_RUN, Box::new(|_p: &Param| { unsafe { BOOL_VAR = true } }));
-        io.fire(EVENT_RUN, &Param::None);
+        let cfg = Config::new();
+        let mut io = IO::new(EVENT_LAST, &cfg);
+        io.on(EVENT_RUN, |_p| { unsafe { BOOL_VAR = true } });
+        io.fire(EVENT_RUN, &Params {param: Param::None, cfg: &cfg});
         assert_eq!(unsafe { BOOL_VAR }, true);
     }
 }

@@ -10,7 +10,9 @@ use std::{thread};
 use colored::Colorize;
 use share::io::IO;
 use share::io::Param;
+use share::io::Params;
 use share::io::events::{*};
+use share::cfg::Config;
 //
 // Local variable of this module, which keeps thread instance
 //
@@ -26,9 +28,9 @@ static mut THREAD_STOPPED: bool = false;
 ///
 /// Plugin API. Do main work by haddling terminal commands and call core API
 ///
-#[no_mangle] pub fn idle(io: &IO) {
+#[no_mangle] pub fn idle(io: &IO, cfg: &Config) {
     match THREAD.with(|rec| rec.try_recv()) {
-        Ok(key) => run_command(key.as_str(), io),
+        Ok(key) => run_command(key.as_str(), io, cfg),
         Err(TryRecvError::Empty) => (),
         Err(TryRecvError::Disconnected) => panic!("plugin-terminal: Commands channel disconnected"),
     }
@@ -56,10 +58,10 @@ fn create_thread() -> Receiver<String> {
 ///
 /// Handles command typed in a terminal or show unsupported message
 ///
-fn run_command(cmd: &str, io: &IO) {
+fn run_command(cmd: &str, io: &IO, cfg: &Config) {
     match cmd.trim_matches(|c| c == '\r' || c == '\n') {
-        "quit" | "q" => io.fire(EVENT_QUIT, &Param::None),
-        "run"  | "r" => io.fire(EVENT_RUN, &Param::None),
+        "quit" | "q" => io.fire(EVENT_QUIT, &Params {param: Param::None, cfg}),
+        "run"  | "r" => io.fire(EVENT_RUN, &Params {param: Param::None, cfg}),
         "help" | "h" => println!("{}",
 "Supported commands:
     q, quit   Quit the system

@@ -1,5 +1,5 @@
 //!
-//! Implementation of GUI plugin. Gives an ability to visualize the atoms, 
+//! Implementation of GUI plugin. Gives an ability to visualize atoms, 
 //! molecules and all the stuff inside the world.
 //! TODO: Zoom by mouse scroll button
 //! TODO: Move into 4 directions
@@ -21,7 +21,6 @@ use piston_window::Transformed;
 use piston_window::image;
 use piston_window::clear;
 use share::io::IO;
-use share::cfg::Config;
 use share::io::events::EVENT_SET_DOT;
 use share::io::Param;
 ///
@@ -47,9 +46,9 @@ static mut GUI: Option<Gui> = None;
 /// Plugin API. initializes plugin. Creates piston windows, canvas, context an
 /// all needed stuff for drawing in 2D
 ///
-#[no_mangle] fn init(io: &mut IO, cfg: &mut Config) {
-    create_gui(cfg);
-    add_listeners(io, cfg);
+#[no_mangle] fn init(io: &mut IO) {
+    create_gui(io);
+    add_listeners(io);
 }
 ///
 /// Plugin API. Do main work by haddling GUI and user events, drawing atoms
@@ -79,9 +78,9 @@ static mut GUI: Option<Gui> = None;
     win.set_should_close(true);
 }
 
-fn create_gui(cfg: &mut Config) {
-    let width = cfg.WIDTH() as u32;
-    let height = cfg.HEIGHT() as u32;
+fn create_gui(io: &mut IO) {
+    let width = io.cfg.WIDTH() as u32;
+    let height = io.cfg.HEIGHT() as u32;
     let canvas = im::ImageBuffer::new(width, height);
     let mut win: PistonWindow = WindowSettings::new("irma4", (width, height))
         .exit_on_esc(true)
@@ -110,21 +109,21 @@ fn create_gui(cfg: &mut Config) {
 ///
 /// Adds core listeners to react on
 ///
-fn add_listeners(io: &mut IO, cfg: &mut Config) {
+fn add_listeners(io: &mut IO) {
     //
     // If a dot was added into the world we have to draw it on a canvas
     //
-    let width = cfg.WIDTH();
-    io.on(EVENT_SET_DOT, Box::new(move |params| {
+    io.on(EVENT_SET_DOT, |params| {
         let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
-        if let Param::SetDot(offs, _atom) = params {
+        if let Param::SetDot(offs, _atom) = params.param {
             // TODO: x, y should be calculated according to the size and
             // TODO: offset of the canvas, because canvas may show only
-            // TOSO: a part of big world
+            // TOSO: a part of big world (zoom, scroll)
+            let width = params.cfg.WIDTH();
             let x = offs % width as isize;
             let y = offs / width as isize;
             // TODO: atom's color should be calculated
             gui_ref.canvas.put_pixel(x as u32, y as u32, im::Rgba([150, 0, 0, 255]));
         }
-    }));
+    });
 }

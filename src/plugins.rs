@@ -7,13 +7,12 @@ use log::{*};
 use std::fs;
 use std::env;
 use share::io::IO;
-use share::cfg::Config;
 ///
 /// Plugin API. All required functions of the plugin
 ///
 #[derive(WrapperApi)]
 pub struct Plugin {
-    init: fn(io: &mut IO, cfg: &mut Config),
+    init: fn(io: &mut IO),
     idle: fn(io: &IO),
     remove: fn(io: &IO)
 }
@@ -65,11 +64,11 @@ impl<'a> Plugins {
     /// Inits plugins. This is a place where plugins may add their listeners to the 
     /// Core IO object
     ///
-    pub fn init(&mut self, io: &mut IO, cfg: &mut Config) {
+    pub fn init(&mut self, io: &mut IO) {
         sec!("Init core plugins");
         for (i , p)in self.plugins.iter().enumerate() {
             inf!("Init plugin \"{}\"", self.names.get(i).unwrap());
-            p.init(io, cfg);
+            p.init(io);
         }
     }
     ///
