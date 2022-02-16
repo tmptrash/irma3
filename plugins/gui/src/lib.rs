@@ -4,13 +4,15 @@
 //! TODO: Zoom by mouse scroll button
 //! TODO: Move into 4 directions
 //!
+pub mod global;
+
 extern crate piston_window;
 extern crate image as im;
 extern crate vecmath;
 
+use global::ATOM_COLORS;
 use piston_window::TextureContext;
 use piston_window::PistonWindow;
-use piston_window::G2dTexture;
 use piston_window::WindowSettings;
 use piston_window::TextureSettings;
 use piston_window::Texture;
@@ -23,21 +25,8 @@ use piston_window::clear;
 use share::io::IO;
 use share::io::events::EVENT_SET_DOT;
 use share::io::Param;
-///
-/// Internal GUI plugin data
-///
-struct Gui {
-    width: u32,                            // world width
-    height: u32,                           // world height
-    win: PistonWindow,                     // window object
-    canvas: im::RgbaImage,                 // image buffer to draw the pixels
-    texture_ctx: TextureContext<           // GL texture context
-        gfx_device_gl::Factory,
-        gfx_device_gl::Resources,
-        gfx_device_gl::CommandBuffer>,
-    texture: G2dTexture,                   // GL texture to draw on
-    zoom: f64                              // zoom coefficient
-}
+use share::atom::get_type;
+use global::Gui;
 ///
 /// Plugin's internal Gui data
 ///
@@ -115,15 +104,14 @@ fn add_listeners(io: &mut IO) {
     //
     io.on(EVENT_SET_DOT, |params| {
         let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
-        if let Param::SetDot(offs, _atom) = params.param {
+        if let Param::SetDot(offs, atom) = params.param {
             // TODO: x, y should be calculated according to the size and
             // TODO: offset of the canvas, because canvas may show only
             // TOSO: a part of big world (zoom, scroll)
-            let width = params.cfg.WIDTH();
-            let x = offs % width as isize;
-            let y = offs / width as isize;
-            // TODO: atom's color should be calculated
-            gui_ref.canvas.put_pixel(x as u32, y as u32, im::Rgba([150, 0, 0, 255]));
+            let width = gui_ref.width;
+            let x = offs as u32 % width;
+            let y = offs as u32 / width;
+            gui_ref.canvas.put_pixel(x, y, im::Rgba(ATOM_COLORS[get_type(atom) as usize]));
         }
     });
 }
