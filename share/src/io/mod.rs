@@ -8,7 +8,7 @@ use crate::global::Atom;
 ///
 /// Shorthand for callback function
 ///
-pub type Callback = fn(&Param);
+pub type Callback = Box<dyn Fn(&Param)>;
 ///
 /// Enum for different event parameters types
 ///
@@ -41,9 +41,9 @@ impl IO {
     ///
     /// Unassigns listener (callback function) from event by listener id
     ///
-    pub fn off(&mut self, event: usize, listener_id: usize) {
-        self.events[event].remove(listener_id);
-    }
+    // pub fn off(&mut self, event: usize, listener_id: usize) {
+    //     self.events[event].remove(listener_id);
+    // }
     ///
     /// Fires an event with parameter
     ///
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_new() {
         let mut io = IO::new(EVENT_LAST);
-        io.on(EVENT_RUN, |p: &Param| { unsafe { BOOL_VAR = true } });
+        io.on(EVENT_RUN, Box::new(|_p: &Param| { unsafe { BOOL_VAR = true } }));
         io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { BOOL_VAR }, true);
     }

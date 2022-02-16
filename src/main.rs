@@ -49,14 +49,6 @@ use plugins::Plugins;
 ///
 static mut CFG: Config = Config::new();
 ///
-/// Returns constant configuration value by property
-///
-macro_rules! cfgc { ($prop:ident) => { unsafe { CFG.$prop() } } }
-///
-/// Returns writable configuration value by property
-///
-macro_rules! cfgv { ($prop:ident) => { unsafe { CFG.$prop } } }
-///
 /// Shows a welcome string
 ///
 fn show_welcome() {
@@ -77,14 +69,14 @@ fn init() -> IO {
     
     logger::init();
     sec!("Init core API");
-    io.on(EVENT_RUN, |_|  {
+    io.on(EVENT_RUN, Box::new(|_|  {
         dbg!("Run command catched");
         u!{ CFG.is_running = !CFG.is_running };
-    });
-    io.on(EVENT_QUIT, |_| {
+    }));
+    io.on(EVENT_QUIT, Box::new(|_| {
         dbg!("Quit command catched");
         u! { CFG.stopped = true }
-    });
+    }));
 
     io
 }
@@ -117,24 +109,27 @@ fn create_vmdata(io: &IO) -> VMData {
 fn main() {
     show_welcome();
 
-    let io = init();
-    let mut plugins = Plugins::new(&io);
-    let mut vms = create_vms(cfgc!(VM_AMOUNT));
+    let cfg = unsafe { &mut CFG };
+    let mut io = init();
+    let mut plugins = Plugins::new();
+    
+    plugins.load(cfg.PLUGINS_DIR());
+    plugins.init(&mut io, cfg);
+
+    let mut vms = create_vms(cfg.VM_AMOUNT());
     let mut vm_data = create_vmdata(&io);
 
-    plugins.load(cfgc!(PLUGINS_DIR));
-    plugins.init(u! { &mut CFG });
     //
     // Main loop
     //
     inf!("Run main loop");
-    if cfgc!(AUTORUN) { u!{CFG.is_running = cfgc!(AUTORUN) } }
-    inf!("{}", if cfgc!(AUTORUN) { "Run" } else { "Waiting for a command..." });
+    if cfg.AUTORUN() { cfg.is_running = cfg.AUTORUN() }
+    inf!("{}", if cfg.AUTORUN() { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
-        if i == 0 { plugins.idle() }
-        if cfgv!(stopped) { break }
-        if !cfgc!(is_running) { continue }
+        if i == 0 { plugins.idle(&io) }
+        if cfg.stopped { break }
+        if cfg.is_running { continue }
         if vms.size() > 0 {
             if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
                 if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
@@ -146,6 +141,6 @@ fn main() {
         }
     }
 
-    plugins.remove();
+    plugins.remove(&io);
     show_bye();
 }

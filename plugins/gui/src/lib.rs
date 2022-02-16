@@ -15,11 +15,15 @@ use piston_window::WindowSettings;
 use piston_window::TextureSettings;
 use piston_window::Texture;
 use piston_window::OpenGL;
-use gfx_device_gl::*;
-use im::Pixel;
-use vecmath::*;
+use piston_window::RenderEvent;
+use piston_window::Window;
+use piston_window::Transformed;
+use piston_window::image;
+use piston_window::clear;
 use share::io::IO;
 use share::cfg::Config;
+use share::io::events::EVENT_SET_DOT;
+use share::io::Param;
 ///
 /// Internal GUI plugin data
 ///
@@ -33,16 +37,49 @@ struct Gui {
         gfx_device_gl::Resources,
         gfx_device_gl::CommandBuffer>,
     texture: G2dTexture,                   // GL texture to draw on
-    zoom: f32                              // zoom coefficient
+    zoom: f64                              // zoom coefficient
 }
 ///
 /// Plugin's internal Gui data
 ///
 static mut GUI: Option<Gui> = None;
 ///
-/// Plugin API. initializes plugin
+/// Plugin API. initializes plugin. Creates piston windows, canvas, context an
+/// all needed stuff for drawing in 2D
 ///
-#[no_mangle] fn init(_io: &IO, cfg: &mut Config) {
+#[no_mangle] fn init(io: &mut IO, cfg: &mut Config) {
+    create_gui(cfg);
+    add_listeners(io, cfg);
+}
+///
+/// Plugin API. Do main work by haddling GUI and user events, drawing atoms
+///
+#[no_mangle] pub fn idle(_io: &IO) {
+    let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
+    let win = &mut gui_ref.win;
+    if let Some(e) = win.next() {
+        if e.render_args().is_some() {
+            gui_ref.texture.update(&mut gui_ref.texture_ctx, &gui_ref.canvas).unwrap();
+            win.draw_2d(&e, |c, g, device| {
+                clear([1.0; 4], g);
+                c.zoom(gui_ref.zoom);
+                // Update texture before rendering.
+                gui_ref.texture_ctx.encoder.flush(device);
+                image(&gui_ref.texture, c.transform, g);
+            });
+        }
+    }
+}
+///
+/// Plugin API. Destroys plugin.
+///
+#[no_mangle] pub fn remove(_io: &IO) {
+    let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
+    let win = &mut gui_ref.win;
+    win.set_should_close(true);
+}
+
+fn create_gui(cfg: &mut Config) {
     let width = cfg.WIDTH() as u32;
     let height = cfg.HEIGHT() as u32;
     let canvas = im::ImageBuffer::new(width, height);
@@ -56,7 +93,7 @@ static mut GUI: Option<Gui> = None;
         factory: win.factory.clone(),
         encoder: win.factory.create_command_buffer().into()
     };
-    let mut texture = Texture::from_image(&mut texture_ctx, &canvas, &TextureSettings::new()).unwrap();
+    let texture = Texture::from_image(&mut texture_ctx, &canvas, &TextureSettings::new()).unwrap();
 
     unsafe {
         GUI = Some(Gui {
@@ -67,21 +104,27 @@ static mut GUI: Option<Gui> = None;
             texture_ctx,
             texture,
             zoom: 1.0
-        });
+        })
     }
 }
 ///
-/// Plugin API. Do main work by haddling GUI and user events, drawing atoms
+/// Adds core listeners to react on
 ///
-#[no_mangle] pub fn idle(_io: &IO) {
-    let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
-    let win_ref = &mut gui_ref.win;
-    let event = win_ref.next();
-    if !event.is_some() { return }
-}
-///
-/// Plugin API. Destroys plugin.
-///
-#[no_mangle] pub fn remove(_io: &IO) {
-    // TODO: remove the window!!!
+fn add_listeners(io: &mut IO, cfg: &mut Config) {
+    //
+    // If a dot was added into the world we have to draw it on a canvas
+    //
+    let width = cfg.WIDTH();
+    io.on(EVENT_SET_DOT, Box::new(move |params| {
+        let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
+        if let Param::SetDot(offs, _atom) = params {
+            // TODO: x, y should be calculated according to the size and
+            // TODO: offset of the canvas, because canvas may show only
+            // TOSO: a part of big world
+            let x = offs % width as isize;
+            let y = offs / width as isize;
+            // TODO: atom's color should be calculated
+            gui_ref.canvas.put_pixel(x as u32, y as u32, im::Rgba([150, 0, 0, 255]));
+        }
+    }));
 }

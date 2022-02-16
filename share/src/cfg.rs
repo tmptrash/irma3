@@ -89,8 +89,8 @@ pub struct Config {
 
 impl Config {
     pub const fn new() -> Config {
-        const WIDTH:  usize = 1024;
-        const HEIGHT: usize = 1024;
+        const WIDTH:  usize = 1920;
+        const HEIGHT: usize = 1080;
         Config {
             // read only configuration
             WIDTH,

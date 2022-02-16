@@ -6,6 +6,8 @@
 use std::mem::size_of;
 
 use log::{*};
+use share::io::Param;
+use share::io::events::EVENT_SET_DOT;
 use share::utils;
 use share::global::Atom;
 use share::global::Offs;
@@ -13,6 +15,7 @@ use share::global::Dir;
 use share::global::ATOM_EMPTY;
 use share::global::DIRS_LEN;
 use share::global::I;
+use share::io::IO;
 ///
 /// Structure of the world. It consists of cells and atoms inside them
 ///
@@ -96,14 +99,17 @@ impl World {
         self.cells[offs as I]
     }
 
-    pub fn set_atom(&mut self, offs: Offs, dot: Atom) {
+    pub fn set_atom(&mut self, offs: Offs, dot: Atom, io: &IO) {
         if offs >= self.size as Offs { return }
         self.cells[offs as I] = dot;
+        io.fire(EVENT_SET_DOT, &Param::SetDot(offs, dot));
     }
 
-    pub fn mov_atom(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom) {
+    pub fn mov_atom(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom, io: &IO) {
         if dest_offs >= self.size as Offs { return }
         self.cells[dest_offs as I] = dot;
+        io.fire(EVENT_SET_DOT, &Param::SetDot(dest_offs, dot));
         self.cells[src_offs as I] = ATOM_EMPTY;
+        io.fire(EVENT_SET_DOT, &Param::SetDot(src_offs, ATOM_EMPTY));
     }
 }
