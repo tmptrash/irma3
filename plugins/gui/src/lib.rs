@@ -1,8 +1,6 @@
 //!
 //! Implementation of GUI plugin. Gives an ability to visualize atoms, 
 //! molecules and all the stuff inside the world.
-//! TODO: Zoom by mouse scroll button
-//! TODO: Move into 4 directions
 //!
 pub mod global;
 
@@ -10,22 +8,12 @@ extern crate piston_window;
 extern crate image as im;
 extern crate vecmath;
 
-use global::ATOM_COLORS;
-use global::BLACK_COLOR;
-use piston_window::Event;
-use piston_window::TextureContext;
-use piston_window::PistonWindow;
-use piston_window::WindowSettings;
-use piston_window::TextureSettings;
-use piston_window::Texture;
-use piston_window::OpenGL;
-use piston_window::RenderEvent;
-use piston_window::Window;
-use piston_window::Transformed;
-use piston_window::image;
-use piston_window::clear;
+use global::{ATOM_COLORS, BLACK_COLOR_F32, BLACK_COLOR_U8};
+use piston_window::{Event, TextureContext, PistonWindow, WindowSettings, Texture};
+use piston_window::{OpenGL, RenderEvent, Window, Transformed, TextureSettings};
+use piston_window::{image, clear};
 use share::io::IO;
-use share::io::events::EVENT_SET_DOT;
+use share::io::events::{EVENT_SET_DOT, EVENT_MOVE_DOT};
 use share::io::Param;
 use share::atom::get_type;
 use global::Gui;
@@ -100,13 +88,19 @@ fn add_listeners(io: &mut IO) {
     io.on(EVENT_SET_DOT, |params| {
         let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
         if let Param::SetDot(offs, atom) = params.param {
-            // TODO: x, y should be calculated according to the size and
-            // TODO: offset of the canvas, because canvas may show only
-            // TOSO: a part of big world (zoom, scroll)
-            let width = gui_ref.width;
-            let x = offs as u32 % width;
-            let y = offs as u32 / width;
-            gui_ref.canvas.put_pixel(x, y, im::Rgba(ATOM_COLORS[get_type(atom) as usize]));
+            let w = gui_ref.width;
+            gui_ref.canvas.put_pixel(offs as u32 % w, offs as u32 / w, ATOM_COLORS[get_type(atom) as usize]);
+        }
+    });
+    //
+    // If a dot was moved in the world we have to update it on a canvas
+    //
+    io.on(EVENT_MOVE_DOT, |params| {
+        let gui_ref = unsafe { &mut GUI }.as_mut().unwrap();
+        if let Param::MoveDot(offs0, offs1, atom) = params.param {
+            let w = gui_ref.width;
+            gui_ref.canvas.put_pixel(offs1 as u32 % w, offs1 as u32 / w, ATOM_COLORS[get_type(atom) as usize]);
+            gui_ref.canvas.put_pixel(offs0 as u32 % w, offs0 as u32 / w, BLACK_COLOR_U8);
         }
     });
 }
@@ -116,7 +110,7 @@ fn add_listeners(io: &mut IO) {
 fn render(e: &Event, gui: &mut Gui) {
     gui.texture.update(&mut gui.texture_ctx, &gui.canvas).unwrap();
     gui.win.draw_2d(e, |c, g, device| {
-        clear(BLACK_COLOR, g);
+        clear(BLACK_COLOR_F32, g);
         c.zoom(gui.zoom);
         // Update texture before rendering.
         gui.texture_ctx.encoder.flush(device);

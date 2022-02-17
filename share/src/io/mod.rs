@@ -22,7 +22,8 @@ pub struct Params<'a> {
 ///
 pub enum Param {
     None,                                                       // No parameters
-    SetDot(Offs, Atom),                                         // Draw atom by offset
+    SetDot(Offs, Atom),                                         // Draw an atom by offset
+    MoveDot(Offs, Offs, Atom)                                   // Moves an atom from offs0 to offs1
 }
 ///
 /// Event bus object. Holds all listeners by event
