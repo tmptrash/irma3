@@ -21,7 +21,7 @@ pub const EVENT_QUIT:       usize = 3;
 ///
 /// Loads atoms into the world from a dump file
 ///
-pub const EVENT_LOAD_ATOMS: usize = 4;
+pub const EVENT_LOAD_DUMP:  usize = 4;
 ///
 /// Should be a last event. Every time you add new event in this list,
 /// please update this number

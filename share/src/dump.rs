@@ -10,7 +10,7 @@ use crate::global::Atom;
 ///
 /// Describes an atom. x,y will be converted into offset
 ///
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct AtomDump {
     pub a: Atom,
     pub x: isize,
@@ -19,7 +19,7 @@ pub struct AtomDump {
 ///
 /// Describes one VM in a world. x,y will be converted into offset
 ///
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct VmDump {
     pub x: isize,
     pub y: isize,
@@ -29,7 +29,7 @@ pub struct VmDump {
 /// Describes one block of atoms and VMs. For example an organism
 /// or molecule
 ///
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Block {
     pub atoms: Vec<AtomDump>,
     pub vms: Vec<VmDump>
@@ -37,7 +37,7 @@ pub struct Block {
 ///
 /// Describes entiry dump of all atoms and VMs in a world
 ///
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Dump {
     pub width: usize,                          // World width
     pub height: usize,                         // World height
@@ -67,10 +67,10 @@ impl Dump {
             Ok(s) => {
                 match serde_json::from_str(&s) {
                     Ok(dump) => Ok(dump),
-                    Err(_) => Err(format!("Error loading file {}", file))
+                    Err(_) => Err(format!("Error loading file \"{}\"", file))
                 }
             },
-            Err(_) => Err(format!("Error loading file {}", file))
+            Err(_) => Err(format!("Error loading file \"{}\"", file))
         }
     }
 }

@@ -84,7 +84,7 @@ fn init() {
         dbg!("\"Quit\" command catched");
         cfg!().stopped = true;
     });
-    io!().on(EVENT_LOAD_ATOMS, |p: &Param| {
+    io!().on(EVENT_LOAD_DUMP, |p: &Param| {
         dbg!("\"Load atoms\" command catched");
         if let Param::LoadAtoms(file) = p {
             load_atoms(file);
@@ -108,8 +108,8 @@ fn load_atoms(file: &str) {
                 );
                 return;
             }
-            for _b in dump.blocks.iter() {
-                unimplemented!() // TODO: i'm here
+            for b in dump.blocks.iter() {
+                println!("{:?}", b);
             }
         },
         Err(err) => err!("Error loading dump: {}", err)

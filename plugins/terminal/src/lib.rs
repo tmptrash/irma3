@@ -2,11 +2,8 @@
 //! Implementation of terminal plugin. Gives an ability to run terminal commands
 //! during app execution.
 //!
-use std::io;
-use std::sync::mpsc;
-use std::sync::mpsc::Receiver;
-use std::sync::mpsc::TryRecvError;
-use std::{thread};
+use std::{thread, io};
+use std::sync::{mpsc, mpsc::Receiver, mpsc::TryRecvError};
 use colored::Colorize;
 use share::io::Param;
 use share::io::events::{*};
@@ -89,5 +86,5 @@ fn load_atoms(cmd: Vec<&str>, core: &Core) {
         return;
     }
 
-    core.io.fire(EVENT_LOAD_ATOMS, &Param::LoadAtoms(&cmd[1].to_string()));
+    core.io.fire(EVENT_LOAD_DUMP, &Param::LoadAtoms(cmd[1]));
 }
