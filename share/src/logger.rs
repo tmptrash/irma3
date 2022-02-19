@@ -58,12 +58,12 @@ pub fn init() {
 ///
 #[macro_export] macro_rules! sec {
     ($($arg:tt)?) => (
-        let p = $crate::logger::Pad {};
+        let _p = $crate::logger::Pad {};
         info!("{}{}", " ".repeat(unsafe { $crate::logger::INDENT }), $($arg)?);
         unsafe { $crate::logger::INDENT += $crate::logger::LEFT_PADDING }
     );
     ($arg0:literal, $($args:tt)+) => (
-        let p = $crate::logger::Pad {};
+        let _p = $crate::logger::Pad {};
         info!("{}{}", " ".repeat(unsafe { $crate::logger::INDENT }), format!($arg0, $($args)+));
         unsafe { $crate::logger::INDENT += $crate::logger::LEFT_PADDING }
     );

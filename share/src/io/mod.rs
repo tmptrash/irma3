@@ -3,40 +3,40 @@
 //!
 pub mod events;
 
+use log::{*};
 use crate::global::Offs;
 use crate::global::Atom;
-use crate::cfg::Config;
+use crate::inf;
+use crate::sec;
+
+use self::events::EVENT_LAST;
 ///
 /// Shorthand for callback function
 ///
-pub type Callback = fn(&Params);
-///
-/// Describes parameters of IO events
-///
-pub struct Params<'a> {
-    pub param: Param,
-    pub cfg: &'a Config
-}
+pub type Callback = fn(&Param);
 ///
 /// Enum for different event parameters types
 ///
-pub enum Param {
+pub enum Param<'a> {
     None,                                                       // No parameters
     SetDot(Offs, Atom),                                         // Draw an atom by offset
-    MoveDot(Offs, Offs, Atom)                                   // Moves an atom from offs0 to offs1
+    MoveDot(Offs, Offs, Atom),                                  // Moves an atom from offs0 to offs1
+    LoadAtoms(&'a String)                                       // Loads atoms and VMs from a file
 }
 ///
 /// Event bus object. Holds all listeners by event
 ///
-pub struct IO<'a> {
-    events: Vec<Vec<Callback>>,
-    pub cfg: &'a Config
+pub struct IO {
+    events: Vec<Vec<Callback>>
 }
 
-impl<'a> IO<'a> {
-    pub fn new(events: usize, cfg: &Config) -> IO {
-        let mut io = IO { events: Vec::new(), cfg };
-        for _i in 0..events { io.events.push(Vec::new()) }
+impl IO {
+    pub fn new() -> IO {
+        sec!("Create IO object");
+        let mut io = IO { events: Vec::new() };
+        for _i in 0..EVENT_LAST { io.events.push(Vec::new()) }
+        inf!("IO supports {} events", EVENT_LAST);
+
         io
     }
     ///
@@ -56,7 +56,7 @@ impl<'a> IO<'a> {
     ///
     /// Fires an event with parameter
     ///
-    pub fn fire(&self, event: usize, p: &Params) {
+    pub fn fire(&self, event: usize, p: &Param) {
         for cb in &self.events[event] { cb(p) }
     }
 }
@@ -65,7 +65,6 @@ impl<'a> IO<'a> {
 mod tests {
     use crate::cfg::Config;
     use crate::io::Param;
-    use crate::io::Params;
     use crate::io::IO;
     use crate::io::events::{*};
     static mut BOOL_VAR: bool = false;
@@ -73,9 +72,9 @@ mod tests {
     #[test]
     fn test_new() {
         let cfg = Config::new();
-        let mut io = IO::new(EVENT_LAST, &cfg);
+        let mut io = IO::new();
         io.on(EVENT_RUN, |_p| { unsafe { BOOL_VAR = true } });
-        io.fire(EVENT_RUN, &Params {param: Param::None, cfg: &cfg});
+        io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { BOOL_VAR }, true);
     }
 }

@@ -6,15 +6,15 @@ use dlopen::wrapper::{Container, WrapperApi};
 use log::{*};
 use std::fs;
 use std::env;
-use share::io::IO;
+use share::Core;
 ///
 /// Plugin API. All required functions of the plugin
 ///
 #[derive(WrapperApi)]
 pub struct Plugin {
-    init: fn(io: &mut IO),
-    idle: fn(io: &IO),
-    remove: fn(io: &IO)
+    init: fn(core: &mut Core),
+    idle: fn(core: &Core),
+    remove: fn(core: &Core)
 }
 ///
 /// Container of all loaded plugins
@@ -64,27 +64,27 @@ impl<'a> Plugins {
     /// Inits plugins. This is a place where plugins may add their listeners to the 
     /// Core IO object
     ///
-    pub fn init(&mut self, io: &mut IO) {
+    pub fn init(&mut self, core: &mut Core) {
         sec!("Init core plugins");
         for (i , p)in self.plugins.iter().enumerate() {
             inf!("Init plugin \"{}\"", self.names.get(i).unwrap());
-            p.init(io);
+            p.init(core);
         }
     }
     ///
     /// Calls plugins idle() function to do their internal work. On every iteration
     /// Core calls this function for every plugin.
     ///
-    pub fn idle(&self, io: &IO) { for p in self.plugins.iter() { p.idle(io) } }
+    pub fn idle(&self, core: &Core) { for p in self.plugins.iter() { p.idle(core) } }
     ///
     /// Destroy all plugins. Destroy means removing of Container<Plugin>
     /// structure for plugins.
     ///
-    pub fn remove(&self, io: &IO) {
+    pub fn remove(&self, core: &Core) {
         sec!("Destroy core plugins");
         for (i, p) in self.plugins.iter().enumerate() {
             inf!("Remove plugin \"{}\"", self.names.get(i).unwrap());
-            p.remove(io);
+            p.remove(core);
         }
     }
 }

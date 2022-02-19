@@ -3,10 +3,10 @@
 //!
 use crate::world::World;
 use crate::vm::buf::MoveBuffer;
-use share::cfg::AtomConfig;
-use share::global::Dir;
-use share::global::DIRS_LEN;
-use share::io::IO;
+use crate::cfg::AtomConfig;
+use crate::global::Dir;
+use crate::global::DIRS_LEN;
+use crate::io::IO;
 ///
 /// Data needed for VM to work. Should be set from outside of VM
 ///
@@ -30,5 +30,5 @@ pub struct VMData<'a, 'b> {
     ///
     /// Reference to IO mechanism
     ///
-    pub io: &'b IO<'b>
+    pub io: &'b IO
 }

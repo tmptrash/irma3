@@ -4,8 +4,9 @@
 //!
 use log::{*};
 use std::collections::HashSet;
-use share::global::Offs;
-use share::utils::stack::Stack;
+use crate::global::Offs;
+use crate::utils::stack::Stack;
+use crate::inf;
 ///
 /// Buffer and stack of moving atoms, which are used by mov command.
 /// Depending on it's size we may move big or small molecules. See mov
@@ -22,7 +23,7 @@ impl MoveBuffer {
     /// this buffer. It should be created only once.
     ///
     pub fn new(size: usize) -> MoveBuffer {
-        sec!("Create MoveBuffer of size {}", size);
+        inf!("Create MoveBuffer of size {}", size);
         MoveBuffer {
             buf: HashSet::new(),
             stack: Stack::new(size)

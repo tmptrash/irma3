@@ -7,10 +7,9 @@ pub mod buf;
 pub mod vmdata;
 pub mod ret;
 
-use share::global::Atom;
-use share::global::{*};
-use share::atom;
-use atom::{*};
+use crate::global::Atom;
+use crate::global::{*};
+use crate::atom::{*};
 use ret::Return;
 use vmdata::VMData;
 //

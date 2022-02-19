@@ -4,19 +4,16 @@
 //! and know nothing about atoms and their inner structure.
 //! 
 use std::mem::size_of;
-
 use log::{*};
-use share::io::Param;
-use share::io::Params;
-use share::io::events::EVENT_SET_DOT;
-use share::utils;
-use share::global::Atom;
-use share::global::Offs;
-use share::global::Dir;
-use share::global::ATOM_EMPTY;
-use share::global::DIRS_LEN;
-use share::global::I;
-use share::io::IO;
+use crate::{inf, sec};
+use crate::io::{events::EVENT_SET_DOT, Param, IO};
+use crate::utils;
+use crate::global::Atom;
+use crate::global::Offs;
+use crate::global::Dir;
+use crate::global::ATOM_EMPTY;
+use crate::global::DIRS_LEN;
+use crate::global::I;
 ///
 /// Structure of the world. It consists of cells and atoms inside them
 ///
@@ -103,13 +100,13 @@ impl World {
     pub fn set_atom(&mut self, offs: Offs, dot: Atom, io: &IO) {
         if offs >= self.size as Offs { return }
         self.cells[offs as I] = dot;
-        io.fire(EVENT_SET_DOT, &Params {param: Param::SetDot(offs, dot), cfg: io.cfg});
+        io.fire(EVENT_SET_DOT, &Param::SetDot(offs, dot));
     }
 
     pub fn mov_atom(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom, io: &IO) {
         if dest_offs >= self.size as Offs { return }
         self.cells[dest_offs as I] = dot;
         self.cells[src_offs as I] = ATOM_EMPTY;
-        io.fire(EVENT_SET_DOT, &Params{param: Param::MoveDot(src_offs, dest_offs, ATOM_EMPTY), cfg: io.cfg});
+        io.fire(EVENT_SET_DOT, &Param::MoveDot(src_offs, dest_offs, ATOM_EMPTY));
     }
 }

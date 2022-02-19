@@ -3,7 +3,8 @@
 //! are read only (they are in upper case), some read write (they are in lover case).
 //!
 use getset::{CopyGetters, Getters};
-use crate::global::DIRS_LEN;
+use crate::{global::DIRS_LEN, inf};
+use log::{*};
 ///
 /// Configuration related to atoms
 ///
@@ -53,7 +54,7 @@ pub struct Config {
     ///
     /// Maximum amount of VMs in a system.
     ///
-    VM_AMOUNT: usize,
+    MAX_VM_AMOUNT: usize,
     ///
     /// Map of offsets depending on directions.
     /// 0 1 2
@@ -88,7 +89,8 @@ pub struct Config {
 }
 
 impl Config {
-    pub const fn new() -> Config {
+    pub fn new() -> Config {
+        inf!("Create global configuration");
         const WIDTH:  usize = 1920;
         const HEIGHT: usize = 1080;
         Config {
@@ -96,7 +98,7 @@ impl Config {
             WIDTH,
             HEIGHT,
             MOV_BUF_SIZE: 1024,
-            VM_AMOUNT: 1024,
+            MAX_VM_AMOUNT: 1024,
             DIR_TO_OFFS: [-(WIDTH as i32) - 1, -(WIDTH as i32), -(WIDTH as i32) + 1, 1, (WIDTH as i32) + 1, (WIDTH as i32), (WIDTH as i32) - 1, -1],
             AUTORUN: false,
             PLUGINS_DIR: "plugins",

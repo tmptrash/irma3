@@ -48,7 +48,7 @@ impl Dump {
     ///
     /// Saves a Dump struct into a file
     ///
-    fn save(file: &str, dump: &Dump) -> Result<bool, String> {
+    pub fn save(file: &str, dump: &Dump) -> Result<bool, String> {
         match serde_json::to_string(dump) {
             Ok(json) => {
                 match fs::write(file, json) {
@@ -62,7 +62,7 @@ impl Dump {
     ///
     /// Loads dump from file and into a Dump struct
     ///
-    fn load(file: &str) -> Result<Dump, String> {
+    pub fn load(file: &str) -> Result<Dump, String> {
         match fs::read_to_string(file) {
             Ok(s) => {
                 match serde_json::from_str(&s) {

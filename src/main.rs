@@ -22,32 +22,25 @@
 //! types, which give all the variety of forms in this virtual world. To run such interactions 
 //! (we also call them "run atoms") we use special [Virtual Machines](#Atomic-Virtual-Machines).
 //!
-mod world;
-mod vm;
 mod plugins;
+#[macro_use] mod defs;
 
 #[macro_use] extern crate dlopen_derive;
 #[macro_use] extern crate share;
+
 use log::{*};
 use colored::Colorize;
-use world::World;
-use vm::VM;
-use vm::vmdata::VMData;
-use vm::ret::Return;
-use vm::buf::MoveBuffer;
 use share::cfg::Config;
+use share::world::World;
+use share::vm::{VM, vmdata::VMData, ret::Return, buf::MoveBuffer};
+use share::dump::Dump;
 use share::global::DIR_REV;
 use share::utils::vec::Vector;
-use share::io::IO;
-use share::io::events::{*};
+use share::io::{IO, Param, events::{*}};
 use share::logger;
+use share::Core;
 use plugins::Plugins;
-///
-/// Global configuration, which is shared for entire app. The meaning of this is
-/// in ability to change RW properties in real time to affect application without
-/// rerun
-///
-pub static mut CFG: Config = Config::new();
+use defs::CORE;
 ///
 /// Shows a welcome string
 ///
@@ -61,44 +54,90 @@ fn show_bye() {
     println!("\n{}\n", "Bye".green());
 }
 ///
-/// Inits core API. This is a place where Core adds listeners to different events,
-/// which are fired from outside of the core. For example, from a plugin.
+/// Creates core and init it's API. This is a place where Core adds listeners
+/// to different events, which fired from outside (from plugins).
 ///
-fn init() -> IO<'static> {
-    let mut io = IO::new(EVENT_LAST, unsafe { &CFG });
-    
+fn init() {
+    //
+    // logger should be initialized before all inf!, err!, wrn!, dbg! macro calls
+    //
     logger::init();
-    sec!("Init core API");
-    io.on(EVENT_RUN, |_|  {
-        dbg!("Run command catched");
-        u!{ CFG.is_running = !CFG.is_running };
+    //
+    // This is very important peace of code. Here we assign Core struct instance
+    // to global CORE variable. It should be done only once in  a code and here
+    //
+    sec!("Init core");
+    u! {
+        CORE = Box::into_raw(Box::new(Core {
+            cfg: Config::new(),
+            vms: create_vms(1),
+            io: IO::new()
+        })).cast()
+    }
+    
+    inf!("Init core API");
+    io!().on(EVENT_RUN, |_| {
+        dbg!("\"Run\" command catched");
+        u! { cfg!().is_running = !cfg!().is_running };
     });
-    io.on(EVENT_QUIT, |_| {
-        dbg!("Quit command catched");
-        u! { CFG.stopped = true }
+    io!().on(EVENT_QUIT, |_| {
+        dbg!("\"Quit\" command catched");
+        cfg!().stopped = true;
     });
-
-    io
+    io!().on(EVENT_LOAD_ATOMS, |p: &Param| {
+        dbg!("\"Load atoms\" command catched");
+        if let Param::LoadAtoms(file) = p {
+            load_atoms(file);
+        }
+    });
+}
+///
+/// Loads atoms and VMs from dump file
+///
+fn load_atoms(file: &str) {
+    match Dump::load(file) {
+        Ok(dump) => {
+            let cfg = cfg!();
+            if dump.width != cfg.WIDTH() || dump.height != cfg.HEIGHT() {
+                err!("Dump file \"{}\" has incorrect width and height. World size: {}x{}, Dump file size: {}x{}.",
+                    file,
+                    cfg.WIDTH(),
+                    cfg.HEIGHT(),
+                    dump.width,
+                    dump.height
+                );
+                return;
+            }
+            for _b in dump.blocks.iter() {
+                unimplemented!() // TODO: i'm here
+            }
+        },
+        Err(err) => err!("Error loading dump: {}", err)
+    }
 }
 ///
 /// Creates a list of VMs.
 ///
+// TODO: this function should be called after load command
 fn create_vms(amount: usize) -> Vector<VM> {
-    sec!("Create VMs");
+    sec!("Create Virtual Machines");
     let mut vec = Vector::new(amount);
     for _i in 0..amount { vec.add(VM::new(0, 0)); }
-    inf!("Created {} VMs", amount);
+    inf!("Max available VMs - {}", amount);
+
     vec
 }
 ///
 /// Creates VMData struct, which is used during VM work
 ///
-fn create_vmdata<'a>(io: &'a IO) -> VMData<'a, 'a> {
+fn create_vmdata(io: &IO) -> VMData {
+    sec!("Create shared VM data");
+    let cfg = cfg!();
     VMData {
-        world: u! {World::new(CFG.WIDTH(), CFG.HEIGHT(), CFG.DIR_TO_OFFS()).unwrap()},
-        buf: MoveBuffer::new(u! {CFG.MOV_BUF_SIZE()}),
+        world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
+        buf: MoveBuffer::new(u!{ cfg.MOV_BUF_SIZE() }),
         dirs_rev: DIR_REV,
-        atoms_cfg: u! { &CFG.atoms },
+        atoms_cfg: u! { &cfg.atoms },
         io
     }
 }
@@ -109,16 +148,15 @@ fn create_vmdata<'a>(io: &'a IO) -> VMData<'a, 'a> {
 fn main() {
     show_welcome();
 
-    let cfg = unsafe { &mut CFG };
-    let mut io = init();
+    init();
+    let core = core!();
+    let cfg = cfg!();
+    let vms = vms!();
+    let mut vm_data = create_vmdata(io!());
     let mut plugins = Plugins::new();
     
     plugins.load(cfg.PLUGINS_DIR());
-    plugins.init(&mut io);
-
-    let mut vms = create_vms(cfg.VM_AMOUNT());
-    let mut vm_data = create_vmdata(&io);
-
+    plugins.init(core);
     //
     // Main loop
     //
@@ -127,10 +165,11 @@ fn main() {
     inf!("{}", if cfg.AUTORUN() { "Run" } else { "Waiting for a command..." });
     let mut i = 0;
     loop {
-        if i == 0 { plugins.idle(&io) }
+        if i == 0 { plugins.idle(core) }
         if cfg.stopped { break }
         if cfg.is_running { continue }
         if vms.size() > 0 {
+            // TODO: can we move this logic to VM module?
             if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
                 if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
             }
@@ -141,6 +180,6 @@ fn main() {
         }
     }
 
-    plugins.remove(&io);
+    plugins.remove(core);
     show_bye();
 }

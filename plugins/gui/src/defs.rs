@@ -1,5 +1,5 @@
 //!
-//! Module of global definitions for GUI plugin
+//! Module of definitions for GUI plugin
 //! 
 use piston_window::{PistonWindow, TextureContext, G2dTexture};
 use image as im;
