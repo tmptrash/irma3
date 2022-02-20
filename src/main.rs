@@ -86,34 +86,8 @@ fn init() {
     });
     io!().on(EVENT_LOAD_DUMP, |p: &Param| {
         dbg!("\"Load atoms\" command catched");
-        if let Param::LoadAtoms(file) = p {
-            load_atoms(file);
-        }
+        if let Param::LoadAtoms(file) = p { Dump::load(file, core!()); }
     });
-}
-///
-/// Loads atoms and VMs from dump file
-///
-fn load_atoms(file: &str) {
-    match Dump::load(file) {
-        Ok(dump) => {
-            let cfg = cfg!();
-            if dump.width != cfg.WIDTH() || dump.height != cfg.HEIGHT() {
-                err!("Dump file \"{}\" has incorrect width and height. World size: {}x{}, Dump file size: {}x{}.",
-                    file,
-                    cfg.WIDTH(),
-                    cfg.HEIGHT(),
-                    dump.width,
-                    dump.height
-                );
-                return;
-            }
-            for b in dump.blocks.iter() {
-                println!("{:?}", b);
-            }
-        },
-        Err(err) => err!("Error loading dump: {}", err)
-    }
 }
 ///
 /// Creates a list of VMs.

@@ -4,9 +4,11 @@
 ///
 /// Describes one atom in a world
 ///
+use log::{*};
+use crate::err;
 use serde::{Serialize, Deserialize};
 use std::fs;
-use crate::global::Atom;
+use crate::{global::Atom, Core};
 ///
 /// Describes an atom. x,y will be converted into offset
 ///
@@ -62,15 +64,41 @@ impl Dump {
     ///
     /// Loads dump from file and into a Dump struct
     ///
-    pub fn load(file: &str) -> Result<Dump, String> {
+    pub fn load(file: &str, core: &mut Core) -> bool {
         match fs::read_to_string(file) {
             Ok(s) => {
                 match serde_json::from_str(&s) {
-                    Ok(dump) => Ok(dump),
-                    Err(_) => Err(format!("Error loading file \"{}\"", file))
+                    Ok(dump) => Dump::load_dump(file, dump, core),
+                    Err(e) => {
+                        err!("Error loading file \"{}\". Error: {}", file, e);
+                        false
+                    }
                 }
             },
-            Err(_) => Err(format!("Error loading file \"{}\"", file))
+            Err(_) => {
+                err!("Error loading file \"{}\"", file);
+                false
+            }
         }
+    }
+    ///
+    /// Loads atoms and VMs from a dump file
+    ///
+    fn load_dump(file: &str, dump: Dump, core: &mut Core) -> bool {
+        if dump.width != core.cfg.WIDTH() || dump.height != core.cfg.HEIGHT() {
+            err!("Dump file \"{}\" has incorrect width and height. World size: {}x{}, Dump file size: {}x{}.",
+                file,
+                core.cfg.WIDTH(),
+                core.cfg.HEIGHT(),
+                dump.width,
+                dump.height
+            );
+            return false;
+        }
+        for b in dump.blocks.iter() {
+            println!("{:?}", b);
+        }
+
+        true
     }
 }
