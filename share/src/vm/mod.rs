@@ -236,9 +236,13 @@ impl VM {
         Return::AddVm(self.energy / 2, offs)
     }
     ///
-    /// Return energy amount of current VM
+    /// Returns energy amount of current VM
     ///
     pub fn get_energy(&self) -> isize { self.energy }
+    ///
+    /// Returns offset of current VM
+    ///
+    pub fn get_offs(&self) -> Offs { self.offs }
     ///
     /// Decreases energy amount for current VM
     ///

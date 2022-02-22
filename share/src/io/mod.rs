@@ -21,7 +21,8 @@ pub enum Param<'a> {
     None,                                                       // No parameters
     SetDot(Offs, Atom),                                         // Draw an atom by offset
     MoveDot(Offs, Offs, Atom),                                  // Moves an atom from offs0 to offs1
-    LoadAtoms(&'a str)                                          // Loads atoms and VMs from a file
+    LoadAtoms(&'a str),                                         // Loads atoms and VMs from a file
+    SaveAtoms(&'a str)                                          // Saves atoms and VMs to a file
 }
 ///
 /// Event bus object. Holds all listeners by event

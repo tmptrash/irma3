@@ -19,11 +19,15 @@ pub const EVENT_RUN:        usize = 2;
 ///
 pub const EVENT_QUIT:       usize = 3;
 ///
-/// Loads atoms into the world from a dump file
+/// Loads atoms and VMs into the world from a dump file
 ///
 pub const EVENT_LOAD_DUMP:  usize = 4;
+///
+/// Saves atoms and VMs into the world from a dump file
+///
+pub const EVENT_SAVE_DUMP:  usize = 5;
 ///
 /// Should be a last event. Every time you add new event in this list,
 /// please update this number
 ///
-pub const EVENT_LAST:       usize = 5;
+pub const EVENT_LAST:       usize = 6;

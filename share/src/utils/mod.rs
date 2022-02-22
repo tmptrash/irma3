@@ -25,7 +25,12 @@ pub fn zero<T: Copy>(vec: &mut Vec<T>, zero: T) {
 pub fn to_offs(x: isize, y: isize, cfg: &Config) -> Offs {
     y * cfg.WIDTH() as isize + x
 }
-
+///
+/// Converts offset into x,y
+///
+pub fn to_xy(offs: Offs, cfg: &Config) -> (isize, isize) {
+    (offs % cfg.WIDTH() as isize, offs / cfg.WIDTH() as isize)
+}
 ///
 /// Alias of unsafe {}
 ///

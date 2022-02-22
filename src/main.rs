@@ -97,6 +97,14 @@ fn init() {
             err!("\"Load atoms\" command catched, but it contains wrong arguments. Should be Param::LoadAtoms(file)");
         }
     });
+    io!().on(EVENT_SAVE_DUMP, |p: &Param| {
+        if let Param::SaveAtoms(file) = p {
+            dbg!("\"Save atoms\" command catched. Dump file: \"{}\"", file);
+            Dump::save(file, core!());
+        } else {
+            err!("\"Save atoms\" command catched, but it contains wrong arguments. Should be Param::SaveAtoms(file)");
+        }
+    });
 }
 ///
 /// Entry point of application. It creates global Configuration, World and list of VMs, logger

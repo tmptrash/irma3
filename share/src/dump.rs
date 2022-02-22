@@ -5,7 +5,7 @@
 /// Describes one atom in a world
 ///
 use log::{*};
-use crate::{err, vm::VM, global::Offs, utils::to_offs};
+use crate::{err, vm::VM, global::{Offs, ATOM_EMPTY}, utils::{to_offs, to_xy}};
 use serde::{Serialize, Deserialize};
 use std::fs;
 use crate::{global::Atom, Core};
@@ -47,18 +47,53 @@ pub struct Dump {
 }
 
 impl Dump {
+    pub fn new() -> Dump {
+        Dump {
+            width: 0,
+            height: 0,
+            blocks: Vec::new()
+        }
+    }
     ///
     /// Saves a Dump struct into a file
     ///
-    pub fn save(file: &str, dump: &Dump) -> Result<bool, String> {
-        match serde_json::to_string(dump) {
+    pub fn save(file: &str, core: &Core) -> bool {
+        let mut dump = Dump::new();
+        let mut offs: Offs = 0;
+        let max_offs = (core.cfg.WIDTH() * core.cfg.HEIGHT()) as Offs;
+
+        dump.width = core.cfg.WIDTH();
+        dump.height = core.cfg.HEIGHT();
+        let mut block = Block {atoms: Vec::new(), vms: Vec::new()};
+        
+        while offs < max_offs {
+            let a = core.vm_data.world.get_atom(offs);
+            if a != ATOM_EMPTY {
+                let (x, y) = to_xy(offs, &core.cfg);
+                block.atoms.push(AtomDump {a, x, y});
+            }
+            offs += 1;
+        }
+        for vm in &core.vms.data {
+            let (x,y) = to_xy(vm.get_offs(), &core.cfg);
+            block.vms.push(VmDump {x, y, e: vm.get_energy()});
+        }
+        dump.blocks.insert(0, block);
+
+        match serde_json::to_string(&dump) {
             Ok(json) => {
                 match fs::write(file, json) {
-                    Ok(_) => Ok(true),
-                    Err(_) => Err(format!("Error saving file {}", file))
+                    Ok(_) => true,
+                    Err(_) => {
+                        err!("Error saving file \"{}\"", file);
+                        false
+                    }
                 }
             },
-            Err(_) => Err(format!("Error saving file {}", file))
+            Err(_) => {
+                err!("Error saving file {}", file);
+                false
+            }
         }
     }
     ///

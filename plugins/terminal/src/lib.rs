@@ -29,7 +29,8 @@ const HELP_MSG: &str = "Supported commands:
     q, quit       Quit the system
     r, run        Run or stop the system
     h, help       Show this message
-    l, load=file  Load atoms and VMs from a file";
+    l, load=file  Load atoms and VMs from a file
+    s, save=file  Save atoms and VMs to a file";
 ///
 /// Plugin API. initializes plugin
 ///
@@ -74,6 +75,7 @@ fn run_command(line: &str, core: &Core) {
         "run"  | "r" => core.io.fire(EVENT_RUN, &Param::None),
         "help" | "h" => println!("{}",HELP_MSG.yellow()),
         "load" | "l" => load_atoms(cmd, core),
+        "save" | "s" => save_atoms(cmd, core),
         _ => println!("{}", "Unknown command. Type \"help\" for details".red().bold())
     }
 }
@@ -82,9 +84,20 @@ fn run_command(line: &str, core: &Core) {
 ///
 fn load_atoms(cmd: Vec<&str>, core: &Core) {
     if cmd.len() < 2 {
-        println!("{}", "File for load wasn't specified. Type \"help\" for details".red().bold());
+        println!("{}", "File for load isn't specified. Type \"help\" for details".red().bold());
         return;
     }
 
     core.io.fire(EVENT_LOAD_DUMP, &Param::LoadAtoms(cmd[1]));
+}
+///
+/// Loads atoms and VMs from a file
+///
+fn save_atoms(cmd: Vec<&str>, core: &Core) {
+    if cmd.len() < 2 {
+        println!("{}", "File for save isn't specified. Type \"help\" for details".red().bold());
+        return;
+    }
+
+    core.io.fire(EVENT_SAVE_DUMP, &Param::SaveAtoms(cmd[1]));
 }
