@@ -45,22 +45,21 @@ impl World {
     /// Creates new world of atoms
     /// @param len - amount of atoms in a world
     ///
-    pub fn new(width: usize, height: usize, dirs: [i32; 8]) -> Option<World> {
+    pub fn new(width: usize, height: usize, dirs: [i32; 8]) -> World {
         sec!("Create world");
         let size = width * height;
-        if size < 1 { return None }
+        if size < 1 { panic!("Incorrect world size. Size: ({},{})", width, height) }
         inf!("Size: {}x{} atoms, {:?}b", width, height, size * size_of::<Atom>());
         let mut mem = utils::alloc(size);
         utils::zero(&mut mem, 0);
-        Some(
-            World {
-                cells: mem,
-                width,
-                height,
-                size,
-                dirs
-            }
-        )
+
+        World {
+            cells: mem,
+            width,
+            height,
+            size,
+            dirs
+        }
     }
     ///
     /// Returns direction between two dots in a world. The direction is

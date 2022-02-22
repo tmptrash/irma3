@@ -23,3 +23,7 @@ macro_rules! cfg { () => { u!{ &mut (*(crate::defs::CORE as *mut Core)).cfg }}}
 /// Macro to simplify global access to IO
 ///
 macro_rules! io  { () => { u!{ &mut (*(crate::defs::CORE as *mut Core)).io }}}
+///
+/// Macro to simplify global access to IO
+///
+macro_rules! vm_data { () => { u!{ &mut (*(crate::defs::CORE as *mut Core)).vm_data }}}

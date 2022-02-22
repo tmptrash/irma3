@@ -30,7 +30,7 @@ pub struct Vector<T: Copy> {
     ///
     size: usize
 }
-
+// TODO: we have to remove Copy trait from this struct
 impl<T: Copy> Vector<T> {
     ///
     /// Returns new instance of a vector structure with predefined size

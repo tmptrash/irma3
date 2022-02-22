@@ -14,5 +14,6 @@ pub mod world;
 pub struct Core {
     pub cfg: cfg::Config,
     pub vms: utils::vec::Vector<vm::VM>,
-    pub io : io::IO
+    pub io : io::IO,
+    pub vm_data: vm::vmdata::VMData
 }

@@ -5,7 +5,7 @@
 /// Describes one atom in a world
 ///
 use log::{*};
-use crate::err;
+use crate::{err, vm::VM, global::Offs, utils::to_offs};
 use serde::{Serialize, Deserialize};
 use std::fs;
 use crate::{global::Atom, Core};
@@ -95,8 +95,31 @@ impl Dump {
             );
             return false;
         }
-        for b in dump.blocks.iter() {
-            println!("{:?}", b);
+        let mut offs: Offs;
+        let max_offs = core.cfg.WIDTH() * core.cfg.HEIGHT() - 1;
+        for b in &dump.blocks {
+            for a in &b.atoms {
+                offs = to_offs(a.x, a.y, &core.cfg);
+                if offs as usize > max_offs {
+                    err!(
+                        "Invalid atom position in a dump file. Atom: {}, Atom x,y: ({},{}), World size: ({},{})",
+                        a.a, a.x, a.y, core.cfg.WIDTH(), core.cfg.HEIGHT()
+                    );
+                    continue;
+                }
+                core.vm_data.world.set_atom(offs, a.a, &core.io);
+            }
+            for vm in &b.vms {
+                offs = to_offs(vm.x, vm.y, &core.cfg);
+                if offs as usize > max_offs {
+                    err!(
+                        "Invalid VM position in a dump file. VM energy: {}, VM x,y: ({},{}), World size: ({},{})",
+                        vm.e, vm.x, vm.y, core.cfg.WIDTH(), core.cfg.HEIGHT()
+                    );
+                    continue;
+                }
+                core.vms.add(VM::new(vm.e, to_offs(vm.x, vm.y, &core.cfg)));
+            }
         }
 
         true

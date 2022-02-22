@@ -1,6 +1,8 @@
 //!
 //! Global utilities module
 //!
+
+use crate::{cfg::Config, global::Offs};
 pub mod vec;
 pub mod stack;
 ///
@@ -17,6 +19,13 @@ pub fn alloc<T>(len: usize) -> Vec<T> {
 pub fn zero<T: Copy>(vec: &mut Vec<T>, zero: T) {
     for val in vec.iter_mut() { *val = zero }
 }
+///
+/// Converts x,y into Offs
+///
+pub fn to_offs(x: isize, y: isize, cfg: &Config) -> Offs {
+    y * cfg.WIDTH() as isize + x
+}
+
 ///
 /// Alias of unsafe {}
 ///

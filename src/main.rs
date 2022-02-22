@@ -31,10 +31,8 @@ mod plugins;
 use log::{*};
 use colored::Colorize;
 use share::cfg::Config;
-use share::world::World;
-use share::vm::{VM, vmdata::VMData, ret::Return, buf::MoveBuffer};
+use share::vm::{VM, vmdata::VMData, ret::Return};
 use share::dump::Dump;
-use share::global::DIR_REV;
 use share::utils::vec::Vector;
 use share::io::{IO, Param, events::{*}};
 use share::logger;
@@ -62,16 +60,23 @@ fn init() {
     // logger should be initialized before all inf!, err!, wrn!, dbg! macro calls
     //
     logger::init();
+    sec!("Init core");
+    let cfg = Config::new();
+    let vm_amount = cfg.MAX_VM_AMOUNT();
+    let width = cfg.WIDTH();
+    let height = cfg.HEIGHT();
+    let dir2offs = cfg.DIR_TO_OFFS();
+    let mov_buf_size = cfg.MOV_BUF_SIZE();
     //
     // This is very important peace of code. Here we assign Core struct instance
     // to global CORE variable. It should be done only once in  a code and here
     //
-    sec!("Init core");
     u! {
         CORE = Box::into_raw(Box::new(Core {
-            cfg: Config::new(),
-            vms: create_vms(1),
-            io: IO::new()
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         })).cast()
     }
     
@@ -85,35 +90,13 @@ fn init() {
         cfg!().stopped = true;
     });
     io!().on(EVENT_LOAD_DUMP, |p: &Param| {
-        dbg!("\"Load atoms\" command catched");
-        if let Param::LoadAtoms(file) = p { Dump::load(file, core!()); }
+        if let Param::LoadAtoms(file) = p {
+            dbg!("\"Load atoms\" command catched. Dump file: \"{}\"", file);
+            Dump::load(file, core!());
+        } else {
+            err!("\"Load atoms\" command catched, but it contains wrong arguments. Should be Param::LoadAtoms(file)");
+        }
     });
-}
-///
-/// Creates a list of VMs.
-///
-// TODO: this function should be called after load command
-fn create_vms(amount: usize) -> Vector<VM> {
-    sec!("Create Virtual Machines");
-    let mut vec = Vector::new(amount);
-    for _i in 0..amount { vec.add(VM::new(0, 0)); }
-    inf!("Max available VMs - {}", amount);
-
-    vec
-}
-///
-/// Creates VMData struct, which is used during VM work
-///
-fn create_vmdata(io: &IO) -> VMData {
-    sec!("Create shared VM data");
-    let cfg = cfg!();
-    VMData {
-        world: World::new(cfg.WIDTH(), cfg.HEIGHT(), cfg.DIR_TO_OFFS()).unwrap(),
-        buf: MoveBuffer::new(u!{ cfg.MOV_BUF_SIZE() }),
-        dirs_rev: DIR_REV,
-        atoms_cfg: u! { &cfg.atoms },
-        io
-    }
 }
 ///
 /// Entry point of application. It creates global Configuration, World and list of VMs, logger
@@ -126,7 +109,6 @@ fn main() {
     let core = core!();
     let cfg = cfg!();
     let vms = vms!();
-    let mut vm_data = create_vmdata(io!());
     let mut plugins = Plugins::new();
     
     plugins.load(cfg.PLUGINS_DIR());
@@ -144,7 +126,7 @@ fn main() {
         if cfg.is_running { continue }
         if vms.size() > 0 {
             // TODO: can we move this logic to VM module?
-            if let Return::AddVm(energy, offs) = vms.data[i].run_atom(&mut vm_data) {
+            if let Return::AddVm(energy, offs) = vms.data[i].run_atom(core) {
                 if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
             }
             if vms.data[i].get_energy() < 1 { vms.del(i); }
