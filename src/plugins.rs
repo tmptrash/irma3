@@ -3,6 +3,7 @@
 //! and run them.
 //!
 use dlopen::wrapper::{Container, WrapperApi};
+use colored::Colorize;
 use log::{*};
 use std::fs;
 use std::env;
@@ -23,7 +24,8 @@ pub struct Plugins {
     plugins: Vec<Container<Plugin>>,
     names: Vec<String>
 }
-impl<'a> Plugins {
+
+impl Plugins {
     pub fn new() -> Plugins {
         Plugins {
             plugins: Vec::<Container<Plugin>>::new(),
@@ -40,7 +42,7 @@ impl<'a> Plugins {
         let files = fs::read_dir(folder);
         if let Result::Err(_e) = files {
             err!("Folder \"{}\" is incorrect or doesn't exist", folder);
-            return;
+            panic!("{}", "Please specify correct plugins folder. See Config.PLUGINS_DIR for details".red().bold());
         }
 
         for f in files.unwrap() {
@@ -59,6 +61,10 @@ impl<'a> Plugins {
                 }
             }
         }
+
+        if self.plugins.is_empty() {
+            panic!("{}", "No core plugins were found. Please specify correct plugins folder. See Config.PLUGINS_DIR for details".red().bold());
+        }
     }
     ///
     /// Inits plugins. This is a place where plugins may add their listeners to the 
@@ -66,7 +72,7 @@ impl<'a> Plugins {
     ///
     pub fn init(&mut self, core: &mut Core) {
         sec!("Init core plugins");
-        for (i , p)in self.plugins.iter().enumerate() {
+        for (i , p) in self.plugins.iter().enumerate() {
             inf!("Init plugin \"{}\"", self.names.get(i).unwrap());
             p.init(core);
         }
@@ -86,5 +92,16 @@ impl<'a> Plugins {
             inf!("Remove plugin \"{}\"", self.names.get(i).unwrap());
             p.remove(core);
         }
+    }
+}
+
+mod tests {
+    #[test]
+    #[should_panic]
+    fn test_load() {
+        let folder = "test-666";
+        std::fs::create_dir(folder).unwrap();
+        let mut plugins = crate::Plugins::new();
+        plugins.load(folder);
     }
 }
