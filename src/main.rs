@@ -140,7 +140,7 @@ fn main() {
             if vms.data[i].get_energy() < 1 { vms.del(i); }
 
             i += 1;
-            if i > vms.size() { i = 0 }
+            if i >= vms.size() { i = 0 }
         }
     }
 
