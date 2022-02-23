@@ -56,9 +56,9 @@ fn create_gui(core: &mut Core) {
     let height = core.cfg.HEIGHT() as u32;
     let canvas = im::ImageBuffer::new(width, height);
     let mut win: PistonWindow = WindowSettings::new("irma4", (width, height))
-        .exit_on_esc(true)
+        .exit_on_esc(false)
         .graphics_api(OpenGL::V3_2)
-        .fullscreen(true)
+        .fullscreen(false)
         .build()
         .unwrap();
     let mut texture_ctx = TextureContext {

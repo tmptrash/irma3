@@ -91,15 +91,16 @@ pub struct Config {
 impl Config {
     pub fn new() -> Config {
         inf!("Create global configuration");
-        const WIDTH:  usize = 1920;
-        const HEIGHT: usize = 1080;
+        const WIDTH:  usize = 100;
+        const HEIGHT: usize = 100;
+
         Config {
             // read only configuration
             WIDTH,
             HEIGHT,
             MOV_BUF_SIZE: 1024,
             MAX_VM_AMOUNT: 1024,
-            DIR_TO_OFFS: [-(WIDTH as i32) - 1, -(WIDTH as i32), -(WIDTH as i32) + 1, 1, (WIDTH as i32) + 1, (WIDTH as i32), (WIDTH as i32) - 1, -1],
+            DIR_TO_OFFS: Config::get_dir_offs(WIDTH as i32),
             AUTORUN: false,
             PLUGINS_DIR: "plugins",
             // read-write configuration
@@ -114,4 +115,8 @@ impl Config {
             }
         }
     }
+    ///
+    /// Returns direction offsets array
+    ///
+    fn get_dir_offs(w: i32) -> [i32; 8] { [-w - 1, -w, -w + 1, 1, w + 1, w, w - 1, -1] }
 }
