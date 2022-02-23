@@ -5,17 +5,15 @@
 //! 
 pub mod buf;
 pub mod vmdata;
-pub mod ret;
 
 use crate::Core;
 use crate::global::Atom;
 use crate::global::{*};
 use crate::atom::{*};
-use ret::Return;
 //
 // map between atom type number and handler fn index. Should be in stack
 //
-const ATOMS_MAP: &[fn(&mut VM, Atom, &mut Core) -> Return] = &[
+const ATOMS_MAP: &[fn(&mut VM, Atom, &mut Core) -> bool] = &[
     VM::atom_empty,  // 0 - must be an empty fn. Means empty cell or no atom
     VM::atom_mov,
     VM::atom_fix,
@@ -55,10 +53,10 @@ impl VM {
     /// Runs one atom depending on type and moves VM to the next one depending on
     /// atom direction.
     ///
-    pub fn run_atom(&mut self, core: &mut Core) -> Return {
+    pub fn run_atom(&mut self, core: &mut Core) -> bool {
         let atom: Atom = core.vm_data.world.get_atom(self.offs);
         let atom_type = get_type(atom);
-        if atom_type == ATOM_EMPTY { return Return::Code(RET_SKIPPED) }
+        if atom_type == ATOM_EMPTY { return false }
 
         ATOMS_MAP[atom_type as I](self, atom, core)
     }
@@ -66,7 +64,7 @@ impl VM {
     /// Implements mov command. It moves current atom and all binded atoms together.
     /// Should be optimized by speed. After moving all bonds should not be broken.
     ///
-    pub fn atom_mov(&mut self, mut atom: Atom, core: &mut Core) -> Return {
+    pub fn atom_mov(&mut self, mut atom: Atom, core: &mut Core) -> bool {
         let mut offs: Offs;
         let mut to_offs: Offs;
         let mut d0: Dir;
@@ -139,18 +137,18 @@ impl VM {
             self.offs = wrld.get_offs(self.offs, get_vm_dir(atom));
         }
 
-        Return::Code(RET_OK)
+        true
     }
     ///
     /// Implements fix atom. Creates vm bond between two atoms. If vm bond is already exist, than
     /// try to create if/then bond for if atom. Consumes energy.
     ///
-    pub fn atom_fix(&mut self, atom: Atom, core: &mut Core) -> Return {
+    pub fn atom_fix(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs0 = core.vm_data.world.get_offs(self.offs, get_dir1(atom)); // gets first near atom offs to fix
         let mut atom0 = core.vm_data.world.get_atom(offs0);               // gets first near atom to fix
-        if !is_atom(atom0) { return Return::Code(RET_SKIPPED) }                    // no first near atom to fix
+        if !is_atom(atom0) { return false }                               // no first near atom to fix
         let d0 = get_dir2(atom);
-        if !is_atom(core.vm_data.world.get_dir_atom(offs0, d0)) { return Return::Code(RET_SKIPPED) }  // there is no second near atom to fix
+        if !is_atom(core.vm_data.world.get_dir_atom(offs0, d0)) { return false } // there is no second near atom to fix
 
         // fix vm bond------------------------------------------------------------------------------------------------------
         if !has_vm_bond(atom0) {                                          // first near atom has no vm bond
@@ -159,9 +157,9 @@ impl VM {
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
             if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy -= core.cfg.atoms().fix_energy;
-            return Return::Code(RET_OK);
+            return true;
         }
-        if get_type(atom0) != ATOM_IF { return Return::Code(RET_SKIPPED) } // only if atom has if and then bonds
+        if get_type(atom0) != ATOM_IF { return false }                    // only if atom has if and then bonds
         // fix then bond----------------------------------------------------------------------------------------------------
         if !has_dir2_bond(atom0) {                                       // first near atom has no then bond
             set_dir2(&mut atom0, d0);
@@ -169,21 +167,21 @@ impl VM {
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
             if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy -= core.cfg.atoms().fix_energy;
-            return Return::Code(RET_OK);
+            return true;
         }
 
-        Return::Code(RET_SKIPPED)
+        false
     }
     ///
     /// Implements spl atom. Splits two atoms bonds. If atoms has no vm bond, than
     /// try to split if/then bonds for if atom. Releases energy.
     ///
-    pub fn atom_spl(&mut self, atom: Atom, core: &mut Core) -> Return {
+    pub fn atom_spl(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs0 = core.vm_data.world.get_offs(self.offs, get_dir1(atom)); // gets first near atom offs to split
         let mut atom0 = core.vm_data.world.get_atom(offs0);               // gets first near atom to split
-        if !is_atom(atom0) { return Return::Code(RET_SKIPPED) }           // no first near atom to split
+        if !is_atom(atom0) { return false }                               // no first near atom to split
         let d0 = get_dir2(atom);
-        if !is_atom(core.vm_data.world.get_dir_atom(offs0, d0)) { return Return::Code(RET_SKIPPED) }  // there is no second near atom to split
+        if !is_atom(core.vm_data.world.get_dir_atom(offs0, d0)) { return false }  // there is no second near atom to split
 
         // split vm bond----------------------------------------------------------------------------------------------------
         if has_vm_bond(atom0) {                                           // first near atom has vm bond
@@ -191,49 +189,55 @@ impl VM {
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
             if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy += core.cfg.atoms().spl_energy;
-            return Return::Code(RET_OK);
+            return true;
         }
-        if get_type(atom0) != ATOM_IF { return Return::Code(RET_SKIPPED) }
+        if get_type(atom0) != ATOM_IF { return false }
         // split then bond--------------------------------------------------------------------------------------------------
         if has_dir2_bond(atom0) {                                         // first near atom has then bond
             reset_dir2_bond(&mut atom0);
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
             if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
             self.energy += core.cfg.atoms().spl_energy;
-            return Return::Code(RET_OK);
+            return true;
         }
 
-        Return::Code(RET_SKIPPED)
+        false
     }
     ///
     /// Implements cond command. Depending on the condition VM will run one of two
     /// possible atoms.
     ///
-    pub fn atom_if(&mut self, atom: Atom, core: &mut Core) -> Return {
+    pub fn atom_if(&mut self, atom: Atom, core: &mut Core) -> bool {
         // runs if -> then scenario
         if has_dir2_bond(atom) && is_atom(core.vm_data.world.get_dir_atom(self.offs, get_dir1(atom))) {
             self.offs = core.vm_data.world.get_offs(self.offs, get_dir2(atom));
             self.energy -= core.cfg.atoms().if_energy;
-            return Return::Code(RET_OK);
+            return true;
         }
         // runs else scenario
         if has_vm_bond(atom) {
             self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
             self.energy -= core.cfg.atoms().if_energy;
-            return Return::Code(RET_OK);
+            return true;
         }
 
-        Return::Code(RET_SKIPPED)
+        false
     }
     ///
     /// Implements job command. Creates one new VM instance (thread). Energy decreasing
     /// should be called from outside, because new VM is added there
     ///
-    pub fn atom_job(&mut self, atom: Atom, core: &mut Core) -> Return {
+    pub fn atom_job(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
-        if !is_atom(core.vm_data.world.get_atom(offs)) { return Return::Code(RET_SKIPPED) }
-        //self.energy -= energy;  // should be outside of VM
-        Return::AddVm(self.energy / 2, offs)
+        if !is_atom(core.vm_data.world.get_atom(offs)) { return false }
+        let energy = self.energy / 2;
+        self.energy -= energy;
+        if !core.vms.full() {
+            core.vms.add(VM::new(energy, offs));
+            return true;
+        }
+
+        false
     }
     ///
     /// Returns energy amount of current VM
@@ -244,11 +248,7 @@ impl VM {
     ///
     pub fn get_offs(&self) -> Offs { self.offs }
     ///
-    /// Decreases energy amount for current VM
-    ///
-    pub fn dec_energy(&mut self, energy: isize) { self.energy -= energy; }
-    ///
     /// Just a stub for empty atom in a world
     ///
-    fn atom_empty(&mut self, _atom: Atom, _core: &mut Core) -> Return { Return::Code(RET_SKIPPED) }
+    fn atom_empty(&mut self, _atom: Atom, _core: &mut Core) -> bool { false }
 }

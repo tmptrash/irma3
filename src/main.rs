@@ -31,7 +31,7 @@ mod plugins;
 use log::{*};
 use colored::Colorize;
 use share::cfg::Config;
-use share::vm::{VM, vmdata::VMData, ret::Return};
+use share::vm::vmdata::VMData;
 use share::dump::Dump;
 use share::utils::vec::Vector;
 use share::io::{IO, Param, events::{*}};
@@ -133,10 +133,7 @@ fn main() {
         if cfg.stopped { break }
         if cfg.is_running { continue }
         if vms.size() > 0 {
-            // TODO: can we move this logic to VM module?
-            if let Return::AddVm(energy, offs) = vms.data[i].run_atom(core) {
-                if !vms.full() && vms.add(VM::new(energy, offs)) { vms.data[i].dec_energy(energy) }
-            }
+            vms.data[i].run_atom(core);
             if vms.data[i].get_energy() < 1 { vms.del(i); }
 
             i += 1;

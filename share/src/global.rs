@@ -24,18 +24,6 @@ pub type Bonds = u8;
 ///
 pub type Offs = isize;
 ///
-/// Means that atom was run normally
-///
-pub const RET_OK: u8 = 0;
-///
-/// Means thar atom was not run
-///
-pub const RET_SKIPPED: u8 = 1;
-///
-/// Means that job atom was run
-///
-pub const RET_ADD_VM: u8 = 2;
-///
 /// Amount of possible directions
 ///
 pub const DIRS_LEN: usize = 8;
