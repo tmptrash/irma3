@@ -5,7 +5,7 @@ use crate::global::*;
 ///
 /// Checks if atom is empty (just empty world's cell) or not
 ///
-pub fn is_atom(atom: Atom) -> bool { atom & ATOM_TYPE_MASK >> ATOM_TYPE_SHIFT == ATOM_EMPTY }
+pub fn is_atom(atom: Atom) -> bool { atom & ATOM_TYPE_MASK != ATOM_EMPTY }
 ///
 /// Returns atom type
 ///
@@ -70,3 +70,21 @@ pub fn set_dir2_bond(atom: &mut Atom) { *atom |= ATOM_DIR2_BOND_MASK }
 /// Clears dir2 bond bit (set to 0)
 ///
 pub fn reset_dir2_bond(atom: &mut Atom) { *atom &= ATOM_DIR2_BOND_UNMASK }
+
+
+#[cfg(test)]
+mod tests {
+    use crate::atom;
+
+    #[test]
+    fn test_is_atom() {
+        assert_eq!(atom::is_atom(0b0000_0000_0000_0000), false);
+        assert_eq!(atom::is_atom(0b0010_0000_0000_0000), true);
+        assert_eq!(atom::is_atom(0b0100_0000_0000_0000), true);
+        assert_eq!(atom::is_atom(0b0110_0000_0000_0000), true);
+        assert_eq!(atom::is_atom(0b1000_0000_0000_0000), true);
+        assert_eq!(atom::is_atom(0b1010_0000_0000_0000), true);
+        assert_eq!(atom::is_atom(0b1100_0000_0000_0000), true);
+        assert_eq!(atom::is_atom(0b1110_0000_0000_0000), true);
+    }
+}

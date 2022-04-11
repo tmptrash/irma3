@@ -9,7 +9,7 @@
 //!     let v: Vector::new(10);
 //!     v.add(1);
 //!     v.add(2);
-//!     while i < v.idx {
+//!     while i < v.size() {
 //!         ...
 //!         i += 1;
 //!     } 
@@ -30,7 +30,6 @@ pub struct Vector<T: Copy> {
     ///
     size: usize
 }
-// TODO: we have to remove Copy trait from this struct
 impl<T: Copy> Vector<T> {
     ///
     /// Returns new instance of a vector structure with predefined size

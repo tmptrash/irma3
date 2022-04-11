@@ -69,7 +69,7 @@ fn init() {
     let mov_buf_size = cfg.MOV_BUF_SIZE();
     //
     // This is very important peace of code. Here we assign Core struct instance
-    // to global CORE variable. It should be done only once in  a code and here
+    // to global CORE variable. It should be done only once in a code and here
     //
     u! {
         CORE = Box::into_raw(Box::new(Core {

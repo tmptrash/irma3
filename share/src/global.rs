@@ -36,7 +36,7 @@ pub const DIR_NO: Dir = Dir::MAX;
 ///
 pub const ATOM_EMPTY:            Atom = 0;
 ///
-/// We use 0..1 bits for atom type.
+/// We use 0..2 bits for atom type.
 ///
 pub const ATOM_TYPE_MASK:        Atom = 0b1110_0000_0000_0000;
 ///
@@ -44,7 +44,7 @@ pub const ATOM_TYPE_MASK:        Atom = 0b1110_0000_0000_0000;
 ///
 pub const ATOM_TYPE_SHIFT:       Atom = 13;
 ///
-/// We use 2..4 bits for VM run direction.
+/// We use 3..5 bits for VM run direction.
 ///
 pub const ATOM_VM_DIR_MASK:      Atom = 0b0001_1100_0000_0000;
 ///
@@ -64,7 +64,7 @@ pub const ATOM_VM_BOND_MASK:     Atom = 0b0000_0010_0000_0000;
 ///
 pub const ATOM_VM_BOND_UNMASK:   Atom = 0b1111_1101_1111_1111;
 ///
-/// We use 6..8 bits for if direction (if atom).
+/// We use 7..9 bits for if direction (if atom).
 ///
 pub const ATOM_DIR1_MASK:        Atom = 0b0000_0001_1100_0000;
 ///
@@ -84,7 +84,7 @@ pub const ATOM_DIR1_BOND_MASK:   Atom = 0b0000_0000_0000_0100;
 ///
 pub const ATOM_DIR1_BOND_UNMASK: Atom = 0b1111_1111_1111_1011;
 ///
-/// We use 6..8 bits for if direction (if atom).
+/// We use 9..11 bits for if direction (if atom).
 ///
 pub const ATOM_DIR2_MASK:        Atom = 0b0000_0000_0011_1000;
 ///
@@ -104,7 +104,7 @@ pub const ATOM_DIR2_BOND_MASK:   Atom = 0b0000_0000_0000_0010;
 ///
 pub const ATOM_DIR2_BOND_UNMASK: Atom = 0b1111_1111_1111_1101;
 ///
-/// We use 6..8 bits for direction in mov atom type
+/// We use 7..9 bits for direction in mov atom type
 ///
 pub const ATOM_MOV_DIR:          Atom = 0b0000_0001_1100_0000;
 ///

@@ -1,7 +1,6 @@
 //!
 //! Global utilities module
 //!
-
 use crate::{cfg::Config, global::Offs};
 pub mod vec;
 pub mod stack;
