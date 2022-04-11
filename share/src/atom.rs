@@ -9,11 +9,11 @@ pub fn is_atom(atom: Atom) -> bool { atom & ATOM_TYPE_MASK != ATOM_EMPTY }
 ///
 /// Returns atom type
 ///
-pub fn get_type(atom: Atom) -> Atom { atom & ATOM_TYPE_MASK >> ATOM_TYPE_SHIFT }
+pub fn get_type(atom: Atom) -> Atom { (atom & ATOM_TYPE_MASK) >> ATOM_TYPE_SHIFT }
 ///
 /// Returns next atom direction for VM
 ///
-pub fn get_vm_dir(atom: Atom) -> Dir { (atom & ATOM_VM_DIR_MASK >> ATOM_VM_DIR_SHIFT) as Dir }
+pub fn get_vm_dir(atom: Atom) -> Dir { ((atom & ATOM_VM_DIR_MASK) >> ATOM_VM_DIR_SHIFT) as Dir }
 ///
 /// Sets new atom direction. All other bits keep the same
 ///
@@ -21,7 +21,7 @@ pub fn set_vm_dir(atom: &mut Atom, dir: Dir) { *atom = (*atom & ATOM_VM_DIR_UNMA
 ///
 /// Checks if atom has vm bond
 ///
-pub fn has_vm_bond(atom: Atom) -> bool { atom & ATOM_VM_BOND_MASK > 0 }
+pub fn has_vm_bond(atom: Atom) -> bool { (atom & ATOM_VM_BOND_MASK) > 0 }
 ///
 /// Sets VM bond bit (set to 1)
 ///
@@ -33,7 +33,7 @@ pub fn reset_vm_bond(atom: &mut Atom) { *atom &= ATOM_VM_BOND_UNMASK }
 ///
 /// Returns if atom direction
 ///
-pub fn get_dir1(atom: Atom) -> Dir { (atom & ATOM_DIR1_MASK >> ATOM_DIR1_SHIFT) as Dir }
+pub fn get_dir1(atom: Atom) -> Dir { ((atom & ATOM_DIR1_MASK) >> ATOM_DIR1_SHIFT) as Dir }
 ///
 /// Sets if atom direction. All other bits keep the same
 ///
@@ -41,7 +41,7 @@ pub fn get_dir1(atom: Atom) -> Dir { (atom & ATOM_DIR1_MASK >> ATOM_DIR1_SHIFT) 
 ///
 /// Checks if atom has dir1 bond
 ///
-//pub fn has_dir1_bond(atom: Atom) -> bool { atom & ATOM_DIR1_BOND_MASK > 0 }
+//pub fn has_dir1_bond(atom: Atom) -> bool { (atom & ATOM_DIR1_BOND_MASK) > 0 }
 ///
 /// Sets dir1 bond bit (set to 1)
 ///
@@ -53,7 +53,7 @@ pub fn get_dir1(atom: Atom) -> Dir { (atom & ATOM_DIR1_MASK >> ATOM_DIR1_SHIFT) 
 ///
 /// Returns then atom direction
 ///
-pub fn get_dir2(atom: Atom) -> Dir { (atom & ATOM_DIR2_MASK >> ATOM_DIR2_SHIFT) as Dir }
+pub fn get_dir2(atom: Atom) -> Dir { ((atom & ATOM_DIR2_MASK) >> ATOM_DIR2_SHIFT) as Dir }
 ///
 /// Sets then atom direction. All other bits keep the same
 ///
@@ -61,7 +61,7 @@ pub fn set_dir2(atom: &mut Atom, dir: Dir) { *atom = (*atom & ATOM_DIR2_UNMASK) 
 ///
 /// Checks if atom has dir2 bond
 ///
-pub fn has_dir2_bond(atom: Atom) -> bool { atom & ATOM_DIR2_BOND_MASK > 0 }
+pub fn has_dir2_bond(atom: Atom) -> bool { (atom & ATOM_DIR2_BOND_MASK) > 0 }
 ///
 /// Sets dir2 bond bit (set to 1)
 ///
@@ -86,5 +86,27 @@ mod tests {
         assert_eq!(atom::is_atom(0b1010_0000_0000_0000), true);
         assert_eq!(atom::is_atom(0b1100_0000_0000_0000), true);
         assert_eq!(atom::is_atom(0b1110_0000_0000_0000), true);
+
+        assert_eq!(atom::is_atom(0b0010_0000_0000_1000), true);
+        assert_eq!(atom::is_atom(0b0110_0000_0000_1000), true);
+
+        assert_eq!(atom::is_atom(0b0000_1000_0000_1000), false);
+        assert_eq!(atom::is_atom(0b0000_1000_1000_1000), false);
+        assert_eq!(atom::is_atom(0b0001_0000_0000_0000), false);
+        assert_eq!(atom::is_atom(0b0001_1111_1111_1111), false);
+    }
+    #[test]
+    fn test_get_type() {
+        assert_eq!(atom::get_type(0b0000_0000_0000_0000), 0);
+        assert_eq!(atom::get_type(0b0001_1111_1111_1111), 0);
+        assert_eq!(atom::get_type(0b0010_0000_0000_0000), 1);
+        assert_eq!(atom::get_type(0b0110_0000_0000_0000), 0b11);
+        assert_eq!(atom::get_type(0b1010_0000_0000_0000), 0b101);
+        assert_eq!(atom::get_type(0b1110_0000_0000_0000), 0b111);
+        assert_eq!(atom::get_type(0b1011_0000_0000_0000), 0b101);
+    }
+    #[test]
+    fn test_vm_dir() {
+        assert_eq!(atom::get_type(0b0000_0000_0000_0000), 0);
     }
 }
