@@ -3,11 +3,11 @@
 //!
 use crate::global::*;
 ///
-/// Checks if atom is empty (just empty world's cell) or not
+/// Checks if atom is empty. It may be empty if a cell, which is checked is equal to zero
 ///
 pub fn is_atom(atom: Atom) -> bool { atom & ATOM_TYPE_MASK != ATOM_EMPTY }
 ///
-/// Returns atom type
+/// Returns atom type (mov, fix, spl,...)
 ///
 pub fn get_type(atom: Atom) -> Atom { (atom & ATOM_TYPE_MASK) >> ATOM_TYPE_SHIFT }
 ///
@@ -157,5 +157,55 @@ mod tests {
 
         atom::reset_vm_bond(&mut atom);
         assert_eq!(atom::has_vm_bond(atom), false);
+    }
+    #[test]
+    fn test_get_dir1() {
+        assert_eq!(atom::get_dir1(0b0000_0000_0000_0000), 0);
+        assert_eq!(atom::get_dir1(0b0000_0001_1100_0000), 0b111);
+        assert_eq!(atom::get_dir1(0b0000_0000_0100_0000), 1);
+        assert_eq!(atom::get_dir1(0b0000_0001_0100_0000), 0b101);
+        assert_eq!(atom::get_dir1(0b1111_1110_0011_1111), 0);
+        assert_eq!(atom::get_dir1(0b1111_1110_1011_1111), 0b10);
+    }
+    #[test]
+    fn test_get_dir2() {
+        assert_eq!(atom::get_dir2(0b0000_0000_0000_0000), 0);
+        assert_eq!(atom::get_dir2(0b0000_0000_0011_1000), 0b111);
+        assert_eq!(atom::get_dir2(0b1111_1111_1100_0111), 0);
+        assert_eq!(atom::get_dir2(0b1111_1111_1100_1111), 1);
+        assert_eq!(atom::get_dir2(0b1111_1111_1110_1111), 0b101);
+        assert_eq!(atom::get_dir2(0b1111_1111_1111_1111), 0b111);
+    }
+    #[test]
+    fn test_set_dir2() {
+        let mut atom: atom::Atom = 0;
+        atom::set_dir2(&mut atom, 0b111);
+        assert_eq!(atom::get_dir2(atom), 0b111);
+
+        atom::set_dir2(&mut atom, 1);
+        assert_eq!(atom::get_dir2(atom), 1);
+
+        atom::set_dir2(&mut atom, 0);
+        assert_eq!(atom::get_dir2(atom), 0);
+    }
+    #[test]
+    fn test_has_dir2_bond() {
+        assert_eq!(atom::has_dir2_bond(0b0000_0000_0000_0000), false);
+        assert_eq!(atom::has_dir2_bond(0b0000_0000_0000_0010), true);
+        assert_eq!(atom::has_dir2_bond(0b1111_1111_1111_1101), false);
+    }
+    #[test]
+    fn test_set_dir2_bond() {
+        let mut atom: atom::Atom = 0;
+        atom::set_dir2_bond(&mut atom);
+        assert_eq!(atom::has_dir2_bond(atom), true);
+    }
+    #[test]
+    fn test_reset_dir2_bond() {
+        let mut atom: atom::Atom = 0;
+        atom::set_dir2_bond(&mut atom);
+        assert_eq!(atom::has_dir2_bond(atom), true);
+        atom::reset_dir2_bond(&mut atom);
+        assert_eq!(atom::has_dir2_bond(atom), false);
     }
 }

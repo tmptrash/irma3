@@ -16,10 +16,6 @@ pub type Atom = u16;
 ///
 pub type Dir = u8;
 ///
-/// Atom bonds type. Every bit mean one bone. Bit 0 - up, 1 - up, right,...
-///
-pub type Bonds = u8;
-///
 /// Offset in a world
 ///
 pub type Offs = isize;
@@ -84,7 +80,7 @@ pub const ATOM_DIR1_BOND_MASK:   Atom = 0b0000_0000_0000_0100;
 ///
 pub const ATOM_DIR1_BOND_UNMASK: Atom = 0b1111_1111_1111_1011;
 ///
-/// We use 9..11 bits for if direction (if atom).
+/// We use 10..12 bits for if direction (if atom).
 ///
 pub const ATOM_DIR2_MASK:        Atom = 0b0000_0000_0011_1000;
 ///
