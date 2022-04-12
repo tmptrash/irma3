@@ -64,7 +64,6 @@ impl IO {
 
 #[cfg(test)]
 mod tests {
-    use crate::cfg::Config;
     use crate::io::Param;
     use crate::io::IO;
     use crate::io::events::{*};
@@ -72,7 +71,6 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let cfg = Config::new();
         let mut io = IO::new();
         io.on(EVENT_RUN, |_p| { unsafe { BOOL_VAR = true } });
         io.fire(EVENT_RUN, &Param::None);

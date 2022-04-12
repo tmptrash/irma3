@@ -106,7 +106,56 @@ mod tests {
         assert_eq!(atom::get_type(0b1011_0000_0000_0000), 0b101);
     }
     #[test]
-    fn test_vm_dir() {
-        assert_eq!(atom::get_type(0b0000_0000_0000_0000), 0);
+    fn test_get_vm_dir() {
+        assert_eq!(atom::get_vm_dir(0b0000_0000_0000_0000), 0);
+        assert_eq!(atom::get_vm_dir(0b0000_0100_0000_0000), 1);
+        assert_eq!(atom::get_vm_dir(0b0000_1000_0000_0000), 2);
+        assert_eq!(atom::get_vm_dir(0b0001_0000_0000_0000), 4);
+        assert_eq!(atom::get_vm_dir(0b1111_0011_1111_1111), 4);
+    }
+    #[test]
+    fn test_set_vm_dir() {
+        let mut atom: atom::Atom = 0;
+        atom::set_vm_dir(&mut atom, 1);
+        assert_eq!(atom::get_vm_dir(atom), 1);
+
+        atom::set_vm_dir(&mut atom, 0);
+        assert_eq!(atom::get_vm_dir(atom), 0);
+
+        atom::set_vm_dir(&mut atom, 6);
+        assert_eq!(atom::get_vm_dir(atom), 6);
+
+        atom::set_vm_dir(&mut atom, 7);
+        assert_eq!(atom::get_vm_dir(atom), 7);
+
+        atom::set_vm_dir(&mut atom, 8);
+        assert_eq!(atom::get_vm_dir(atom), 0);
+    }
+    #[test]
+    fn test_has_vm_bond() {
+        assert_eq!(atom::has_vm_bond(0b0000_0000_0000_0000), false);
+        assert_eq!(atom::has_vm_bond(0b0000_0010_0000_0000), true);
+        assert_eq!(atom::has_vm_bond(0b0000_0111_0000_0000), true);
+        assert_eq!(atom::has_vm_bond(0b0000_0101_0000_0000), false);
+        assert_eq!(atom::has_vm_bond(0b1111_1101_1111_1111), false);
+        assert_eq!(atom::has_vm_bond(0b1111_1111_1111_1111), true);
+    }
+    #[test]
+    fn test_set_vm_bond() {
+        let mut atom: atom::Atom = 0;
+        atom::set_vm_bond(&mut atom);
+        assert_eq!(atom::has_vm_bond(atom), true);
+
+        atom::set_vm_bond(&mut atom);
+        assert_eq!(atom::has_vm_bond(atom), true);
+    }
+    #[test]
+    fn test_reset_vm_bond() {
+        let mut atom: atom::Atom = 0;
+        atom::set_vm_bond(&mut atom);
+        assert_eq!(atom::has_vm_bond(atom), true);
+
+        atom::reset_vm_bond(&mut atom);
+        assert_eq!(atom::has_vm_bond(atom), false);
     }
 }
