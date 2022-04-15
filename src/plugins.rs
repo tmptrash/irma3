@@ -103,5 +103,6 @@ mod tests {
         std::fs::create_dir(folder).unwrap();
         let mut plugins = crate::Plugins::new();
         plugins.load(folder);
+        assert!(std::fs::remove_dir_all(folder).is_ok());
     }
 }

@@ -12,7 +12,7 @@ use crate::{global::Atom, Core};
 ///
 /// Describes an atom. x,y will be converted into offset
 ///
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct AtomDump {
     pub a: Atom,
     pub x: isize,
@@ -21,7 +21,7 @@ pub struct AtomDump {
 ///
 /// Describes one VM in a world. x,y will be converted into offset
 ///
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct VmDump {
     pub x: isize,
     pub y: isize,
@@ -31,7 +31,7 @@ pub struct VmDump {
 /// Describes one block of atoms and VMs. For example an organism
 /// or molecule
 ///
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Block {
     pub atoms: Vec<AtomDump>,
     pub vms: Vec<VmDump>
@@ -39,7 +39,7 @@ pub struct Block {
 ///
 /// Describes entiry dump of all atoms and VMs in a world
 ///
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Dump {
     pub width: usize,                          // World width
     pub height: usize,                         // World height
@@ -158,5 +158,91 @@ impl Dump {
         }
 
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use crate::{dump::Dump, cfg::Config, cfg::CONFIG_FILE, Core, utils::vec::Vector, io::IO};
+    use crate::{vm::vmdata::VMData, global::ATOM_EMPTY};
+
+    fn create_file(file: &str, content: &str) {
+        assert_eq!(fs::write(file, content).is_ok(), true);
+    }
+    fn remove_file(file: &str) {
+        assert_eq!(fs::remove_file(file).is_ok(), true);
+    }
+
+    #[test]
+    fn test_new() {
+        let d = Dump::new();
+        assert_eq!(d.width == 0 && d.height == 0, true);
+        assert_eq!(d.blocks.len(), 0);
+    }
+    #[test]
+    fn test_load() {
+        create_file(CONFIG_FILE, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+
+        let cfg = Config::new();
+        let vm_amount = cfg.MAX_VM_AMOUNT();
+        let width = cfg.WIDTH();
+        let height = cfg.HEIGHT();
+        let dir2offs = cfg.DIR_TO_OFFS();
+        let mov_buf_size = cfg.MOV_BUF_SIZE();
+        let mut core = Core {
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
+        };
+        let file = "file.dump";
+        create_file(file, r#"{
+            "width": 10,
+            "height": 10,
+            "blocks": [{
+                "atoms": [{
+                    "a": 58434,
+                    "x": 0,
+                    "y": 0
+                }],
+                "vms": [{
+                    "x": 0,
+                    "y": 0,
+                    "e": 123
+                }]
+            }]
+        }"#);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(Dump::load(file, &mut core), true);
+        assert_eq!(core.vm_data.world.get_atom(0), 58434);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 1);
+
+        remove_file(file);
+        remove_file(CONFIG_FILE);
+    }
+   #[test]
+   fn test_load_no_file() {
+        let cfg = Config::new();
+        let vm_amount = cfg.MAX_VM_AMOUNT();
+        let width = cfg.WIDTH();
+        let height = cfg.HEIGHT();
+        let dir2offs = cfg.DIR_TO_OFFS();
+        let mov_buf_size = cfg.MOV_BUF_SIZE();
+        let mut core = Core {
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
+        };
+        let file = "file.dump";
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(Dump::load(file, &mut core), false);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
     }
 }
