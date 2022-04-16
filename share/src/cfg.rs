@@ -99,20 +99,20 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Config {
-        inf!("Read {}", CONFIG_FILE);
-        let cfg: Value = match fs::read_to_string(CONFIG_FILE) {
+    pub fn new(file: &str) -> Config {
+        inf!("Read {}", file);
+        let cfg: Value = match fs::read_to_string(file) {
             Ok(s) => {
                 match serde_json::from_str(&s) {
                     Ok(val) => val,
                     Err(e) => {
-                        err!("Error loading file \"{}\". Error: {}", CONFIG_FILE, e);
+                        err!("Error loading file \"{}\". Error: {}", file, e);
                         Value::Null
                     }
                 }
             },
             Err(_) => {
-                err!("Error loading file \"{}\"", CONFIG_FILE);
+                err!("Error loading file \"{}\"", file);
                 Value::Null
             }
         };
