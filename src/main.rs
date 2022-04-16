@@ -30,7 +30,7 @@ mod plugins;
 
 use log::{*};
 use colored::Colorize;
-use share::cfg::Config;
+use share::cfg::{Config, CONFIG_FILE};
 use share::vm::vmdata::VMData;
 use share::dump::Dump;
 use share::utils::vec::Vector;
@@ -61,7 +61,7 @@ fn init() {
     //
     logger::init();
     sec!("Init core");
-    let cfg = Config::new();
+    let cfg = Config::new(CONFIG_FILE);
     let vm_amount = cfg.MAX_VM_AMOUNT();
     let width = cfg.WIDTH();
     let height = cfg.HEIGHT();
