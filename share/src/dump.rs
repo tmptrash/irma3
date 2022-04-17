@@ -357,4 +357,181 @@ mod tests {
         remove_file(dump_file);
         remove_file(cfg_file);
     }
+    #[test]
+    fn test_load_bad_file_format() {
+        let cfg_file = "bad_format.json";
+        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+
+        let cfg = Config::new(cfg_file);
+        let vm_amount = cfg.MAX_VM_AMOUNT();
+        let width = cfg.WIDTH();
+        let height = cfg.HEIGHT();
+        let dir2offs = cfg.DIR_TO_OFFS();
+        let mov_buf_size = cfg.MOV_BUF_SIZE();
+        let mut core = Core {
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
+        };
+        let dump_file = "bad_format.dump";
+        create_file(dump_file, r#"{
+            "width": 10,
+            "height": 10,
+            "bloks: [{
+                "atoms": [{
+                    "a": 58434,
+                    "x": 0,
+                    "y": 0
+                }],
+                "vms": [{
+                    "x": 0,
+                    "y": 0,
+                    "e": 123
+                }]
+            }]
+        }"#);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+
+        remove_file(dump_file);
+        remove_file(cfg_file);
+    }
+    #[test]
+    fn test_load_bad_file_format1() {
+        let cfg_file = "bad_format1.json";
+        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+
+        let cfg = Config::new(cfg_file);
+        let vm_amount = cfg.MAX_VM_AMOUNT();
+        let width = cfg.WIDTH();
+        let height = cfg.HEIGHT();
+        let dir2offs = cfg.DIR_TO_OFFS();
+        let mov_buf_size = cfg.MOV_BUF_SIZE();
+        let mut core = Core {
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
+        };
+        let dump_file = "bad_format1.dump";
+        create_file(dump_file, r#"{
+            "width": 10,
+            "height": 10,
+            "blocks: [{
+                "atms": [{
+                    "a": 58434,
+                    "x": 0,
+                    "y": 0
+                }],
+                "vms": [{
+                    "x": 0,
+                    "y": 0,
+                    "e": 123
+                }]
+            }]
+        }"#);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+
+        remove_file(dump_file);
+        remove_file(cfg_file);
+    }
+    #[test]
+    fn test_load_bad_file_format2() {
+        let cfg_file = "bad_format2.json";
+        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+
+        let cfg = Config::new(cfg_file);
+        let vm_amount = cfg.MAX_VM_AMOUNT();
+        let width = cfg.WIDTH();
+        let height = cfg.HEIGHT();
+        let dir2offs = cfg.DIR_TO_OFFS();
+        let mov_buf_size = cfg.MOV_BUF_SIZE();
+        let mut core = Core {
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
+        };
+        let dump_file = "bad_format2.dump";
+        create_file(dump_file, r#"{
+            "width": 10,
+            "height": 10,
+            "blocks: [{
+                "atoms": [{
+                    "a": 58434,
+                    "x": 0,
+                    "y": 0
+                }],
+                "vms": [{
+                    "e": 123
+                }]
+            }]
+        }"#);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+
+        remove_file(dump_file);
+        remove_file(cfg_file);
+    }
+    #[test]
+    fn test_load_bad_file_format3() {
+        let cfg_file = "bad_format3.json";
+        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+
+        let cfg = Config::new(cfg_file);
+        let vm_amount = cfg.MAX_VM_AMOUNT();
+        let width = cfg.WIDTH();
+        let height = cfg.HEIGHT();
+        let dir2offs = cfg.DIR_TO_OFFS();
+        let mov_buf_size = cfg.MOV_BUF_SIZE();
+        let mut core = Core {
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
+        };
+        let dump_file = "bad_format3.dump";
+        create_file(dump_file, r#"{
+            "width": 10,
+            "height": 10,
+            "blocks: [{
+                "atoms": [{
+                    "a": 58434,
+                    "y": 0
+                }],
+                "vms": [{
+                    "x": 0,
+                    "y": 0,
+                    "e": 123
+                }]
+            }]
+        }"#);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
+        assert_eq!(core.vms.size(), 0);
+
+        remove_file(dump_file);
+        remove_file(cfg_file);
+    }
 }

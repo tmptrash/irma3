@@ -39,7 +39,7 @@ pub static mut INDENT: usize = 0;
 /// only in this module, but should be public to have access from macroses
 ///
 pub struct Pad {}
-impl Drop for Pad { fn drop(&mut self) { unsafe { INDENT -= LEFT_PADDING } } }
+impl Drop for Pad { fn drop(&mut self) { unsafe { INDENT = INDENT.wrapping_sub(LEFT_PADDING); } } }
 ///
 /// Init logger
 ///
