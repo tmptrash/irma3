@@ -18,7 +18,7 @@
 //! // >[2022-02-11 14:19:00.460530] INFO [src\xxx.rs:xx     ]       Message 2
 //! // >[2022-02-11 14:19:00.460530] INFO [src\xxx.rs:xx     ] Third message
 //! ```
-//! 
+//!
 use log::{*};
 use flexi_logger::{DeferredNow, style};
 use time::{format_description::FormatItem, macros::format_description as fmt};

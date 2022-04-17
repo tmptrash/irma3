@@ -109,3 +109,17 @@ impl World {
         io.fire(EVENT_SET_DOT, &Param::MoveDot(src_offs, dest_offs, ATOM_EMPTY));
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::World;
+    #[test]
+    fn test_new() {
+        let w: i32 = 10;
+        let dir2offs = [-w - 1, -w, -w + 1, 1, w + 1, w, w - 1, -1];
+        let world = World::new(w as usize, w as usize, dir2offs);
+
+        assert_eq!(world.width, w as usize);
+        assert_eq!(world.height, w as usize);
+    }
+}
