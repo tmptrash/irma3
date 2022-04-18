@@ -112,14 +112,54 @@ impl World {
 
 #[cfg(test)]
 mod tests {
+    use crate::global::{ATOM_EMPTY, DIR_UP, DIR_UP_RIGHT, DIR_RIGHT, DIR_RIGHT_DOWN, DIR_DOWN, DIR_DOWN_LEFT, DIR_LEFT, DIR_LEFT_UP};
+    use crate::cfg::Config;
+
     use super::World;
     #[test]
     fn test_new() {
         let w: i32 = 10;
-        let dir2offs = [-w - 1, -w, -w + 1, 1, w + 1, w, w - 1, -1];
-        let world = World::new(w as usize, w as usize, dir2offs);
+        let world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
 
         assert_eq!(world.width, w as usize);
         assert_eq!(world.height, w as usize);
+        assert_eq!(world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(world.get_atom(10), ATOM_EMPTY);
+        assert_eq!(world.get_atom(90), ATOM_EMPTY);
+    }
+    #[test]
+    #[should_panic]
+    fn test_new_zero_size() {
+        let w: i32 = 0;
+        World::new(w as usize, w as usize, Config::get_dir_offs(w));
+    }
+    #[test]
+    fn test_get_offs() {
+        let w: i32 = 10;
+        let world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        assert_eq!(world.get_offs(11, DIR_UP), 1);
+        assert_eq!(world.get_offs(11, DIR_UP_RIGHT), 2);
+        assert_eq!(world.get_offs(11, DIR_RIGHT), 12);
+        assert_eq!(world.get_offs(11, DIR_RIGHT_DOWN), 22);
+        assert_eq!(world.get_offs(11, DIR_DOWN), 21);
+        assert_eq!(world.get_offs(11, DIR_DOWN_LEFT), 20);
+        assert_eq!(world.get_offs(11, DIR_LEFT), 10);
+        assert_eq!(world.get_offs(11, DIR_LEFT_UP), 0);
+    }
+    #[test]
+    fn test_get_offs_min_max() {
+        let w: i32 = 10;
+        let world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        assert_eq!(world.get_offs(0, DIR_UP), w * w - 1);
+        assert_eq!(world.get_offs(0, DIR_UP_RIGHT), w * w - 1);
+        assert_eq!(world.get_offs(0, DIR_LEFT), w * w - 1);
+        assert_eq!(world.get_offs(0, DIR_LEFT_UP), w * w - 1);
+        assert_eq!(world.get_offs(0, DIR_DOWN_LEFT), w * w - 1);
+
+        assert_eq!(world.get_offs(99, DIR_UP_RIGHT), 0);
+        assert_eq!(world.get_offs(99, DIR_RIGHT), 0);
+        assert_eq!(world.get_offs(99, DIR_RIGHT_DOWN), 0);
+        assert_eq!(world.get_offs(99, DIR_DOWN), 0);
+        assert_eq!(world.get_offs(99, DIR_DOWN_LEFT), 0);
     }
 }

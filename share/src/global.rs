@@ -16,6 +16,17 @@ pub type Atom = u16;
 ///
 pub type Dir = u8;
 ///
+/// 8 available directions
+///
+pub const DIR_LEFT_UP   : Dir = 0;
+pub const DIR_UP        : Dir = 1;
+pub const DIR_UP_RIGHT  : Dir = 2;
+pub const DIR_RIGHT     : Dir = 3;
+pub const DIR_RIGHT_DOWN: Dir = 4;
+pub const DIR_DOWN      : Dir = 5;
+pub const DIR_DOWN_LEFT : Dir = 6;
+pub const DIR_LEFT      : Dir = 7;
+///
 /// Offset in a world
 ///
 pub type Offs = isize;

@@ -145,7 +145,7 @@ impl Config {
     ///
     /// Returns direction offsets array
     ///
-    fn get_dir_offs(w: i32) -> [i32; 8] { [-w - 1, -w, -w + 1, 1, w + 1, w, w - 1, -1] }
+    pub fn get_dir_offs(w: i32) -> [i32; 8] { [-w - 1, -w, -w + 1, 1, w + 1, w, w - 1, -1] }
     ///
     /// Returns i64 value from a map or default value
     ///
