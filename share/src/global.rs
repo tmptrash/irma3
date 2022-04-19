@@ -18,6 +18,7 @@ pub type Dir = u8;
 ///
 /// 8 available directions
 ///
+pub const DIR_NO        : Dir = Dir::MAX;
 pub const DIR_LEFT_UP   : Dir = 0;
 pub const DIR_UP        : Dir = 1;
 pub const DIR_UP_RIGHT  : Dir = 2;
@@ -34,10 +35,6 @@ pub type Offs = isize;
 /// Amount of possible directions
 ///
 pub const DIRS_LEN: usize = 8;
-///
-/// Means no direction
-///
-pub const DIR_NO: Dir = Dir::MAX;
 ///
 /// Empty atom. Means that current cell is empty
 ///

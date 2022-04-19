@@ -76,7 +76,17 @@ impl World {
     //     3
     // }
     ///
-    /// Returns new offset by start offset and direction
+    /// Returns new offset by start offset and direction. New offset means
+    /// a pixel just near specified. Example: F - offset, 0..7 - directions,
+    /// horizontal digits - X coordinate, vertical - Y coordinate. Offset F is
+    /// equal to (3,2). If direction = 3, than get_offs() returns offset of
+    /// (4,2). If direction = 6, than get_offs() returns offset of (2,3)
+    /// 
+    ///   y
+    /// x 01234
+    ///   1 012
+    ///   2 7F3
+    ///   3 654
     ///
     pub fn get_offs(&self, offs: Offs, dir: Dir) -> Offs {
         let offs = offs + self.dirs[dir as I] as Offs;
@@ -112,8 +122,10 @@ impl World {
 
 #[cfg(test)]
 mod tests {
-    use crate::global::{ATOM_EMPTY, DIR_UP, DIR_UP_RIGHT, DIR_RIGHT, DIR_RIGHT_DOWN, DIR_DOWN, DIR_DOWN_LEFT, DIR_LEFT, DIR_LEFT_UP};
+    use crate::global::{ATOM_EMPTY, DIR_UP, DIR_UP_RIGHT, DIR_RIGHT, DIR_RIGHT_DOWN};
+    use crate::global::{DIR_DOWN, DIR_DOWN_LEFT, DIR_LEFT, DIR_LEFT_UP, Offs};
     use crate::cfg::Config;
+    use crate::io::IO;
 
     use super::World;
     #[test]
@@ -161,5 +173,16 @@ mod tests {
         assert_eq!(world.get_offs(99, DIR_RIGHT_DOWN), 0);
         assert_eq!(world.get_offs(99, DIR_DOWN), 0);
         assert_eq!(world.get_offs(99, DIR_DOWN_LEFT), 0);
+    }
+    #[test]
+    fn test_get_atom() {
+        let w: i32 = 10;
+        let world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 65535;
+        let io = IO::new();
+        assert_eq!(world.get_atom(0), ATOM_EMPTY);
+        world.set_atom(0, atom, &io);
+        assert_eq!(world.get_atom(0), atom);
+        for i in 1..w * w { assert_eq!(world.get_atom(i as Offs), ATOM_EMPTY) }
     }
 }
