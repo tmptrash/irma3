@@ -162,13 +162,11 @@ mod tests {
     fn test_get_offs_min_max() {
         let w: i32 = 10;
         let world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
-        assert_eq!(world.get_offs(0, DIR_UP), w * w - 1);
-        assert_eq!(world.get_offs(0, DIR_UP_RIGHT), w * w - 1);
-        assert_eq!(world.get_offs(0, DIR_LEFT), w * w - 1);
-        assert_eq!(world.get_offs(0, DIR_LEFT_UP), w * w - 1);
-        assert_eq!(world.get_offs(0, DIR_DOWN_LEFT), w * w - 1);
+        assert_eq!(world.get_offs(0, DIR_UP), (w * w - 1) as Offs);
+        assert_eq!(world.get_offs(0, DIR_UP_RIGHT), (w * w - 1) as Offs);
+        assert_eq!(world.get_offs(0, DIR_LEFT), (w * w - 1) as Offs);
+        assert_eq!(world.get_offs(0, DIR_LEFT_UP), (w * w - 1) as Offs);
 
-        assert_eq!(world.get_offs(99, DIR_UP_RIGHT), 0);
         assert_eq!(world.get_offs(99, DIR_RIGHT), 0);
         assert_eq!(world.get_offs(99, DIR_RIGHT_DOWN), 0);
         assert_eq!(world.get_offs(99, DIR_DOWN), 0);
@@ -177,12 +175,63 @@ mod tests {
     #[test]
     fn test_get_atom() {
         let w: i32 = 10;
-        let world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
         let atom = 65535;
         let io = IO::new();
         assert_eq!(world.get_atom(0), ATOM_EMPTY);
         world.set_atom(0, atom, &io);
         assert_eq!(world.get_atom(0), atom);
         for i in 1..w * w { assert_eq!(world.get_atom(i as Offs), ATOM_EMPTY) }
+    }
+    #[test]
+    fn test_get_atom_min_max() {
+        let w: i32 = 10;
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 65535;
+        let io = IO::new();
+        assert_eq!(world.get_atom(0), ATOM_EMPTY);
+        world.set_atom(0, atom, &io);
+        world.set_atom((w * w - 1) as Offs, atom, &io);
+        assert_eq!(world.get_atom(0), atom);
+        for i in 1..w * w - 1 { assert_eq!(world.get_atom(i as Offs), ATOM_EMPTY) }
+    }
+    #[test]
+    fn test_get_dir_atom() {
+        let w: i32 = 10;
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 65535;
+        let io = IO::new();
+        assert_eq!(world.get_atom(0), ATOM_EMPTY);
+        world.set_atom(11, atom, &io);
+
+        assert_eq!(world.get_dir_atom(1, DIR_DOWN), atom);
+        assert_eq!(world.get_dir_atom(2, DIR_DOWN_LEFT), atom);
+        assert_eq!(world.get_dir_atom(12, DIR_LEFT), atom);
+        assert_eq!(world.get_dir_atom(22, DIR_LEFT_UP), atom);
+        assert_eq!(world.get_dir_atom(21, DIR_UP), atom);
+        assert_eq!(world.get_dir_atom(20, DIR_UP_RIGHT), atom);
+        assert_eq!(world.get_dir_atom(10, DIR_RIGHT), atom);
+        assert_eq!(world.get_dir_atom(0, DIR_RIGHT_DOWN), atom);
+    }
+    #[test]
+    fn test_get_dir_atom_min_max() {
+        let w: i32 = 10;
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 65535;
+        let io = IO::new();
+        assert_eq!(world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(world.get_atom((w * w - 1) as Offs), ATOM_EMPTY);
+        world.set_atom(0, atom, &io);
+        world.set_atom((w * w - 1) as Offs, atom, &io);
+
+        assert_eq!(world.get_dir_atom(0, DIR_UP), ATOM_EMPTY);
+        assert_eq!(world.get_dir_atom(0, DIR_UP_RIGHT), ATOM_EMPTY);
+        assert_eq!(world.get_dir_atom(0, DIR_LEFT), ATOM_EMPTY);
+        assert_eq!(world.get_dir_atom(0, DIR_LEFT_UP), ATOM_EMPTY);
+
+        assert_eq!(world.get_dir_atom(99, DIR_RIGHT), ATOM_EMPTY);
+        assert_eq!(world.get_dir_atom(99, DIR_RIGHT_DOWN), ATOM_EMPTY);
+        assert_eq!(world.get_dir_atom(99, DIR_DOWN), ATOM_EMPTY);
+        assert_eq!(world.get_dir_atom(99, DIR_DOWN_LEFT), ATOM_EMPTY);
     }
 }
