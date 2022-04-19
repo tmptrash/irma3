@@ -113,7 +113,7 @@ impl World {
     }
 
     pub fn mov_atom(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom, io: &IO) {
-        if dest_offs >= self.size as Offs { return }
+        if src_offs >= self.size as Offs || dest_offs >= self.size as Offs { return }
         self.cells[dest_offs as I] = dot;
         self.cells[src_offs as I] = ATOM_EMPTY;
         io.fire(EVENT_SET_DOT, &Param::MoveDot(src_offs, dest_offs, ATOM_EMPTY));
@@ -233,5 +233,71 @@ mod tests {
         assert_eq!(world.get_dir_atom(99, DIR_RIGHT_DOWN), ATOM_EMPTY);
         assert_eq!(world.get_dir_atom(99, DIR_DOWN), ATOM_EMPTY);
         assert_eq!(world.get_dir_atom(99, DIR_DOWN_LEFT), ATOM_EMPTY);
+    }
+    #[test]
+    fn test_set_atom() {
+        let w: i32 = 10;
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 128;
+        let io = IO::new();
+
+        for a in 0..(w * w - 1) { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+        world.set_atom(0, atom, &io);
+        assert_eq!(world.get_atom(0 as Offs), atom);
+        for a in 1..(w * w - 1) { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+        world.set_atom(10, atom, &io);
+        assert_eq!(world.get_atom(0 as Offs), atom);
+        for a in 1..10 { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+        for a in 11..(w * w - 1) { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+    }
+    #[test]
+    fn test_set_atom_max() {
+        let w: i32 = 10;
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 128;
+        let max_offs: Offs = (w * w - 1) as Offs;
+        let io = IO::new();
+
+        for a in 0..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+        world.set_atom((w * w * w) as Offs, atom, &io);
+        for a in 0..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+    }
+    #[test]
+    fn test_mov_atom() {
+        let w: i32 = 10;
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 128;
+        let max_offs: Offs = (w * w - 1) as Offs;
+        let io = IO::new();
+
+        for a in 0..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+        world.set_atom(0, atom, &io);
+        world.mov_atom(0, 1, atom, &io);
+        assert_eq!(world.get_atom(1), atom);
+        for a in 2..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+        world.mov_atom(1, 0, atom, &io);
+        for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+    }
+    #[test]
+    fn test_mov_atom_min_max() {
+        let w: i32 = 10;
+        let mut world = World::new(w as usize, w as usize, Config::get_dir_offs(w));
+        let atom = 128;
+        let max_offs: Offs = (w * w - 1) as Offs;
+        let io = IO::new();
+
+        for a in 0..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+        world.set_atom(0, atom, &io);
+        world.mov_atom(0, max_offs + 1, atom, &io);
+        assert_eq!(world.get_atom(0), atom);
+        for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+
+        world.mov_atom(max_offs + 1, 1, atom, &io);
+        assert_eq!(world.get_atom(0), atom);
+        for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
+
+        world.mov_atom(max_offs + 1, max_offs + 2, atom, &io);
+        assert_eq!(world.get_atom(0), atom);
+        for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
     }
 }
