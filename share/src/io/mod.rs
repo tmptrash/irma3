@@ -15,6 +15,11 @@ use self::events::EVENT_LAST;
 ///
 pub type Callback = fn(&Param);
 ///
+/// Empty callback
+///
+const EMPTY_CB: Callback = empty_fn;
+fn empty_fn(_: &Param) {}
+///
 /// Enum for different event parameters types
 ///
 pub enum Param<'a> {
@@ -52,7 +57,7 @@ impl IO {
     /// Unassigns listener (callback function) from event by listener id
     ///
     pub fn off(&mut self, event: usize, listener_id: usize) {
-        self.events[event].remove(listener_id);
+        self.events[event][listener_id] = EMPTY_CB;
     }
     ///
     /// Fires an event with parameter
@@ -110,7 +115,7 @@ mod tests {
         io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { BOOL_VAR }, true);
         unsafe { BOOL_VAR = false; BOOL_VAR1 = false };
-        
+
         io.off(EVENT_RUN, id);
         io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { !BOOL_VAR && !BOOL_VAR1 }, true);
