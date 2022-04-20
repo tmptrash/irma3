@@ -68,6 +68,7 @@ mod tests {
     use crate::io::IO;
     use crate::io::events::{*};
     static mut BOOL_VAR: bool = false;
+    static mut BOOL_VAR1: bool = false;
 
     #[test]
     fn test_new() {
@@ -75,5 +76,25 @@ mod tests {
         io.on(EVENT_RUN, |_p| { unsafe { BOOL_VAR = true } });
         io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { BOOL_VAR }, true);
+    }
+    #[test]
+    fn test_on_fire() {
+        let mut io = IO::new();
+        io.on(EVENT_SAVE_DUMP, |p| { unsafe { BOOL_VAR = if let Param::SaveAtoms(file) = p { *file == "file" } else { false }  } });
+        io.fire(EVENT_SAVE_DUMP, &Param::SaveAtoms("file"));
+        assert_eq!(unsafe { BOOL_VAR }, true);
+    }
+    #[test]
+    fn test_fire_should_not_affect_other_handlers() {
+        let mut io = IO::new();
+        io.on(EVENT_SAVE_DUMP, |_| { unsafe { BOOL_VAR = true }});
+        io.on(EVENT_SET_DOT, |_| { unsafe { BOOL_VAR1 = true }});
+        io.on(EVENT_MOVE_DOT, |_| { unsafe { BOOL_VAR1 = true }});
+        io.on(EVENT_RUN, |_| { unsafe { BOOL_VAR1 = true }});
+        io.on(EVENT_QUIT, |_| { unsafe { BOOL_VAR1 = true }});
+        io.on(EVENT_LOAD_DUMP, |_| { unsafe { BOOL_VAR1 = true }});
+        
+        io.fire(EVENT_SAVE_DUMP, &Param::SaveAtoms("data"));
+        assert_eq!(unsafe { BOOL_VAR && !BOOL_VAR1 }, true);
     }
 }
