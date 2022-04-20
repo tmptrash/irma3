@@ -51,9 +51,9 @@ impl IO {
     ///
     /// Unassigns listener (callback function) from event by listener id
     ///
-    // pub fn off(&mut self, event: usize, listener_id: usize) {
-    //     self.events[event].remove(listener_id);
-    // }
+    pub fn off(&mut self, event: usize, listener_id: usize) {
+        self.events[event].remove(listener_id);
+    }
     ///
     /// Fires an event with parameter
     ///
@@ -76,6 +76,8 @@ mod tests {
         io.on(EVENT_RUN, |_p| { unsafe { BOOL_VAR = true } });
         io.fire(EVENT_RUN, &Param::None);
         assert_eq!(unsafe { BOOL_VAR }, true);
+
+        unsafe { BOOL_VAR = false; BOOL_VAR1 = false };
     }
     #[test]
     fn test_on_fire() {
@@ -83,6 +85,8 @@ mod tests {
         io.on(EVENT_SAVE_DUMP, |p| { unsafe { BOOL_VAR = if let Param::SaveAtoms(file) = p { *file == "file" } else { false }  } });
         io.fire(EVENT_SAVE_DUMP, &Param::SaveAtoms("file"));
         assert_eq!(unsafe { BOOL_VAR }, true);
+
+        unsafe { BOOL_VAR = false; BOOL_VAR1 = false };
     }
     #[test]
     fn test_fire_should_not_affect_other_handlers() {
@@ -93,8 +97,24 @@ mod tests {
         io.on(EVENT_RUN, |_| { unsafe { BOOL_VAR1 = true }});
         io.on(EVENT_QUIT, |_| { unsafe { BOOL_VAR1 = true }});
         io.on(EVENT_LOAD_DUMP, |_| { unsafe { BOOL_VAR1 = true }});
-        
+
         io.fire(EVENT_SAVE_DUMP, &Param::SaveAtoms("data"));
         assert_eq!(unsafe { BOOL_VAR && !BOOL_VAR1 }, true);
+
+        unsafe { BOOL_VAR = false; BOOL_VAR1 = false };
+    }
+    #[test]
+    fn test_off() {
+        let mut io = IO::new();
+        let id = io.on(EVENT_RUN, |_| { unsafe { BOOL_VAR = true }});
+        io.fire(EVENT_RUN, &Param::None);
+        assert_eq!(unsafe { BOOL_VAR }, true);
+        unsafe { BOOL_VAR = false; BOOL_VAR1 = false };
+        
+        io.off(EVENT_RUN, id);
+        io.fire(EVENT_RUN, &Param::None);
+        assert_eq!(unsafe { !BOOL_VAR && !BOOL_VAR1 }, true);
+
+        unsafe { BOOL_VAR = false; BOOL_VAR1 = false };
     }
 }
