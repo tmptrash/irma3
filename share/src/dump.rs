@@ -169,6 +169,7 @@ impl Dump {
 mod tests {
     use std::fs;
     use std::path::Path;
+    use crate::utils::id;
     use crate::{dump::Dump, cfg::Config, Core, utils::vec::Vector, io::IO};
     use crate::{vm::vmdata::VMData, global::ATOM_EMPTY};
 
@@ -189,10 +190,10 @@ mod tests {
     }
     #[test]
     fn test_load() {
-        let cfg_file = "load.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -204,8 +205,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "load.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id () + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "blocks": [{
@@ -224,20 +225,20 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), true);
+        assert_eq!(Dump::load(&dump_file, &mut core), true);
         assert_eq!(core.vm_data.world.get_atom(0), 58434);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 1);
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_load1() {
-        let cfg_file = "load1.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -249,8 +250,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "load1.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id() + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "blocks": [{
@@ -277,7 +278,7 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), true);
+        assert_eq!(Dump::load(&dump_file, &mut core), true);
         assert_eq!(core.vm_data.world.get_atom(0), 58434);
         assert_eq!(core.vm_data.world.get_atom(11), 58435);
         assert_eq!(core.vms.size(), 2);
@@ -286,12 +287,14 @@ mod tests {
         assert_eq!(core.vms.data[1].get_offs(), 11);
         assert_eq!(core.vms.data[1].get_energy(), 124);
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_load_no_file() {
-        let cfg = Config::new("no_file.json"); // this file doesn't exist
+        let cfg_file = id() + ".json";
+        remove_file(&cfg_file);
+        let cfg = Config::new(&cfg_file); // this file doesn't exist
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -315,10 +318,10 @@ mod tests {
     }
     #[test]
     fn test_load_bad_file() {
-        let cfg_file = "bad.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -330,8 +333,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "bad.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id() + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "blocks: [{
@@ -350,20 +353,20 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(Dump::load(&dump_file, &mut core), false);
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_load_bad_file_format() {
-        let cfg_file = "bad_format.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -375,8 +378,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "bad_format.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id() + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "bloks: [{
@@ -395,20 +398,20 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(Dump::load(&dump_file, &mut core), false);
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_load_bad_file_format1() {
-        let cfg_file = "bad_format1.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -420,8 +423,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "bad_format1.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id() + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "blocks: [{
@@ -440,20 +443,20 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(Dump::load(&dump_file, &mut core), false);
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_load_bad_file_format2() {
-        let cfg_file = "bad_format2.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -465,8 +468,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "bad_format2.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id() + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "blocks: [{
@@ -483,20 +486,20 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(Dump::load(&dump_file, &mut core), false);
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_load_bad_file_format3() {
-        let cfg_file = "bad_format3.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -508,8 +511,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "bad_format3.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id() + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "blocks: [{
@@ -527,20 +530,20 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), false);
+        assert_eq!(Dump::load(&dump_file, &mut core), false);
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_save() {
-        let cfg_file = "save.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
         let width = cfg.WIDTH();
         let height = cfg.HEIGHT();
@@ -552,8 +555,8 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         };
-        let dump_file = "save.dump";
-        create_file(dump_file, r#"{
+        let dump_file = id() + ".dump";
+        create_file(&dump_file, r#"{
             "width": 10,
             "height": 10,
             "blocks": [{
@@ -572,12 +575,12 @@ mod tests {
         assert_eq!(core.vm_data.world.get_atom(0), ATOM_EMPTY);
         assert_eq!(core.vm_data.world.get_atom(1), ATOM_EMPTY);
         assert_eq!(core.vms.size(), 0);
-        assert_eq!(Dump::load(dump_file, &mut core), true);
+        assert_eq!(Dump::load(&dump_file, &mut core), true);
 
-        let dump_save_file = "save1.dump";
-        assert_eq!(Dump::save(dump_save_file, &mut core), true);
-        assert_eq!(Path::new(dump_save_file).exists(), true);
-        let json = fs::read_to_string(dump_save_file);
+        let dump_save_file = id() + ".dump";
+        assert_eq!(Dump::save(&dump_save_file, &mut core), true);
+        assert_eq!(Path::new(&dump_save_file).exists(), true);
+        let json = fs::read_to_string(&dump_save_file);
         assert!(json.is_ok());
         let json = json.unwrap();
         assert!(json.contains("\"width\":10"));
@@ -585,8 +588,8 @@ mod tests {
         assert!(json.contains("\"a\":58434"));
         assert!(json.contains("\"e\":123"));
 
-        remove_file(dump_file);
-        remove_file(cfg_file);
-        remove_file(dump_save_file);
+        remove_file(&dump_file);
+        remove_file(&cfg_file);
+        remove_file(&dump_save_file);
     }
 }

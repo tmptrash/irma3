@@ -61,17 +61,25 @@ impl VM {
         ATOMS_MAP[atom_type as I](self, atom, core)
     }
     ///
+    /// Returns energy amount of current VM
+    ///
+    pub fn get_energy(&self) -> isize { self.energy }
+    ///
+    /// Returns offset of current VM
+    ///
+    pub fn get_offs(&self) -> Offs { self.offs }
+    ///
     /// Implements mov command. It moves current atom and all binded atoms together.
     /// Should be optimized by speed. After moving all bonds should not be broken.
     ///
-    pub fn atom_mov(&mut self, mut atom: Atom, core: &mut Core) -> bool {
+    fn atom_mov(&mut self, mut atom: Atom, core: &mut Core) -> bool {
         let mut offs: Offs;
         let mut to_offs: Offs;
         let mut d0: Dir;
         let mut d1: Dir;
         let mut a: Atom;
         let mut o: Offs;
-        let dir   = (atom & ATOM_MOV_DIR >> ATOM_MOV_DIR_SHIFT) as Dir;   // atom move direction
+        let dir = get_dir1(atom);                                         // atom move direction
         let stack = &mut core.vm_data.buf.stack;
         let wrld  = &mut core.vm_data.world;
         let buf   = &mut core.vm_data.buf.buf;
@@ -143,7 +151,7 @@ impl VM {
     /// Implements fix atom. Creates vm bond between two atoms. If vm bond is already exist, than
     /// try to create if/then bond for if atom. Consumes energy.
     ///
-    pub fn atom_fix(&mut self, atom: Atom, core: &mut Core) -> bool {
+    fn atom_fix(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs0 = core.vm_data.world.get_offs(self.offs, get_dir1(atom)); // gets first near atom offs to fix
         let mut atom0 = core.vm_data.world.get_atom(offs0);               // gets first near atom to fix
         if !is_atom(atom0) { return false }                               // no first near atom to fix
@@ -176,7 +184,7 @@ impl VM {
     /// Implements spl atom. Splits two atoms bonds. If atoms has no vm bond, than
     /// try to split if/then bonds for if atom. Releases energy.
     ///
-    pub fn atom_spl(&mut self, atom: Atom, core: &mut Core) -> bool {
+    fn atom_spl(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs0 = core.vm_data.world.get_offs(self.offs, get_dir1(atom)); // gets first near atom offs to split
         let mut atom0 = core.vm_data.world.get_atom(offs0);               // gets first near atom to split
         if !is_atom(atom0) { return false }                               // no first near atom to split
@@ -207,7 +215,7 @@ impl VM {
     /// Implements cond command. Depending on the condition VM will run one of two
     /// possible atoms.
     ///
-    pub fn atom_if(&mut self, atom: Atom, core: &mut Core) -> bool {
+    fn atom_if(&mut self, atom: Atom, core: &mut Core) -> bool {
         // runs if -> then scenario
         if has_dir2_bond(atom) && is_atom(core.vm_data.world.get_dir_atom(self.offs, get_dir1(atom))) {
             self.offs = core.vm_data.world.get_offs(self.offs, get_dir2(atom));
@@ -227,7 +235,7 @@ impl VM {
     /// Implements job command. Creates one new VM instance (thread). Energy decreasing
     /// should be called from outside, because new VM is added there
     ///
-    pub fn atom_job(&mut self, atom: Atom, core: &mut Core) -> bool {
+    fn atom_job(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
         if !is_atom(core.vm_data.world.get_atom(offs)) { return false }
         let energy = self.energy / 2;
@@ -240,15 +248,52 @@ impl VM {
         false
     }
     ///
-    /// Returns energy amount of current VM
-    ///
-    pub fn get_energy(&self) -> isize { self.energy }
-    ///
-    /// Returns offset of current VM
-    ///
-    pub fn get_offs(&self) -> Offs { self.offs }
-    ///
     /// Just a stub for empty atom in a world
     ///
     fn atom_empty(&mut self, _atom: Atom, _core: &mut Core) -> bool { false }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{fs, path::Path};
+    use crate::{cfg::Config, Core, io::IO, vm::vmdata::VMData};
+    use crate::utils::{id, vec::Vector};
+
+    use super::VM;
+
+    fn create_file(file: &str, content: &str) {
+        assert_eq!(fs::write(file, content).is_ok(), true);
+    }
+    fn remove_file(file: &str) {
+        if Path::new(file).exists() { assert_eq!(fs::remove_file(file).is_ok(), true) }
+    }
+    #[test]
+    fn test_new() {
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10, "MAX_VM_AMOUNT": 1}"#);
+
+        let cfg = Config::new(&cfg_file);
+        let vm_amount = cfg.MAX_VM_AMOUNT();
+        let width = cfg.WIDTH();
+        let height = cfg.HEIGHT();
+        let dir2offs = cfg.DIR_TO_OFFS();
+        let mov_buf_size = cfg.MOV_BUF_SIZE();
+        let core = Box::into_raw(Box::new(Core {
+            cfg,
+            vms: Vector::new(vm_amount),
+            io: IO::new(),
+            vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
+        })).cast();
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+
+        pvms.add(VM::new(100, 0));
+        pvmdata.world.set_atom(0, 0b0010_0000_1100_0000, pio); // atom: mov right
+        assert_eq!(pvmdata.world.get_atom(0), 0b0010_0000_1100_0000);
+        pvms.data[0].run_atom(pcore);
+
+        remove_file(&cfg_file);
+    }
 }

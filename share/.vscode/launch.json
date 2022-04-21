@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'share'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=share"
+                ],
+                "filter": {
+                    "name": "share",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "sourceMap": {
+                //
+                // This line is needed for debugging std library. This id is obtaied
+                // from assembler source code during debugging. Details:
+                // https://github.com/vadimcn/vscode-lldb/issues/204#issue-484923630
+                //
+                "/rustc/db9d1b20bba1968c1ec1fc49616d4742c1725b4b/": "${env:USERPROFILE}/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/src/rust"
+            }
+        }
+    ]
+}

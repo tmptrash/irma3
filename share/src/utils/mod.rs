@@ -5,11 +5,24 @@ use crate::{cfg::Config, global::Offs};
 pub mod vec;
 pub mod stack;
 ///
+/// Private identifier. Is used in id() func
+///
+static mut ID: usize = 0;
+///
 /// Alias of unsafe {}
 ///
 #[macro_export] macro_rules! u {
     ($arg:expr) => {
         unsafe { $arg }
+    }
+}
+///
+/// Generates unique id globally for entire app
+///
+pub fn id() -> String {
+    unsafe {
+        ID += 1;
+        ID.to_string()
     }
 }
 ///
@@ -53,6 +66,13 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_id() {
+        let id0 = id();
+        let id1 = id();
+        let id2 = id();
+        assert!(id0 != id1 && id0 != id2 && id1 != id2);
+    }
     #[test]
     fn test_alloc() {
         let mut v: Vec<u32> = alloc(2);

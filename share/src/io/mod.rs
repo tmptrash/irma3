@@ -17,7 +17,6 @@ pub type Callback = fn(&Param);
 ///
 /// Empty callback
 ///
-const EMPTY_CB: Callback = empty_fn;
 fn empty_fn(_: &Param) {}
 ///
 /// Enum for different event parameters types
@@ -54,16 +53,20 @@ impl IO {
         self.events[event].len() - 1 // listener id
     }
     ///
-    /// Unassigns listener (callback function) from event by listener id
+    /// Unassigns listener (callback function) from event by listener id.
+    /// It's important to only mark unused listeners as "empty" because we use 
+    /// indexes as listener id to prevent change all other ids
     ///
     pub fn off(&mut self, event: usize, listener_id: usize) {
-        self.events[event][listener_id] = EMPTY_CB;
+        self.events[event][listener_id] = empty_fn;
     }
     ///
     /// Fires an event with parameter
     ///
     pub fn fire(&self, event: usize, p: &Param) {
-        for cb in &self.events[event] { cb(p) }
+        for cb in &self.events[event] {
+            if *cb as usize != empty_fn as usize { cb(p) }
+        }
     }
 }
 
