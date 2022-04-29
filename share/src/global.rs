@@ -108,20 +108,12 @@ pub const ATOM_DIR2_BOND_MASK:   Atom = 0b0000_0000_0000_0010;
 ///
 pub const ATOM_DIR2_BOND_UNMASK: Atom = 0b1111_1111_1111_1101;
 ///
-/// We use 7..9 bits for direction in mov atom type
-///
-pub const ATOM_MOV_DIR:          Atom = 0b0000_0001_1100_0000;
-///
-/// Amount of bits we have to shift to get mov atom direction
-///
-pub const ATOM_MOV_DIR_SHIFT:    Atom = 6;
-///
-/// Reverted directions. Are used in a process of update atom 
+/// Reverted directions. Are used in a process of update atom
 /// bonds during atom moving.
 /// 4 5 6
 /// 3 X 7
 /// 2 1 0
-/// 
+///
 pub const DIR_REV: [Dir; DIRS_LEN] = [4, 5, 6, 7, 0, 1, 2, 3];
 ///
 /// Directions map for the atom, which is moving. Is used for 

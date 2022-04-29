@@ -6,14 +6,9 @@
 use std::mem::size_of;
 use log::{*};
 use crate::{inf, sec};
-use crate::io::{events::EVENT_SET_DOT, Param, IO};
+use crate::io::{events::EVENT_SET_DOT, events::EVENT_MOVE_DOT, Param, IO};
 use crate::utils;
-use crate::global::Atom;
-use crate::global::Offs;
-use crate::global::Dir;
-use crate::global::ATOM_EMPTY;
-use crate::global::DIRS_LEN;
-use crate::global::I;
+use crate::global::{Atom, ATOM_TYPE_MASK, Offs, Dir, ATOM_EMPTY, DIRS_LEN, I};
 ///
 /// Structure of the world. It consists of cells and atoms inside them
 ///
@@ -94,6 +89,13 @@ impl World {
         else if offs >= self.size as Offs { return 0 }
         offs
     }
+    ///
+    /// Return true if there is an atom under specified offset
+    ///
+    pub fn is_atom(&self, offs: Offs) -> bool {
+        if offs >= self.size as Offs { return false }
+        (self.cells[offs as I] & ATOM_TYPE_MASK) != ATOM_EMPTY
+    }
 
     pub fn get_atom(&self, offs: Offs) -> Atom {
         if offs >= self.size as Offs { return ATOM_EMPTY }
@@ -112,11 +114,12 @@ impl World {
         io.fire(EVENT_SET_DOT, &Param::SetDot(offs, dot));
     }
 
-    pub fn mov_atom(&mut self, src_offs: Offs, dest_offs: Offs, dot: Atom, io: &IO) {
+    pub fn mov_atom(&mut self, src_offs: Offs, dest_offs: Offs, io: &IO) {
         if src_offs >= self.size as Offs || dest_offs >= self.size as Offs { return }
-        self.cells[dest_offs as I] = dot;
+        let atom = self.cells[src_offs as I];
+        self.cells[dest_offs as I] = atom;
         self.cells[src_offs as I] = ATOM_EMPTY;
-        io.fire(EVENT_SET_DOT, &Param::MoveDot(src_offs, dest_offs, ATOM_EMPTY));
+        io.fire(EVENT_MOVE_DOT, &Param::MoveDot(src_offs, dest_offs, atom));
     }
 }
 
@@ -272,10 +275,10 @@ mod tests {
 
         for a in 0..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
         world.set_atom(0, atom, &io);
-        world.mov_atom(0, 1, atom, &io);
+        world.mov_atom(0, 1, &io);
         assert_eq!(world.get_atom(1), atom);
         for a in 2..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
-        world.mov_atom(1, 0, atom, &io);
+        world.mov_atom(1, 0, &io);
         for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
     }
     #[test]
@@ -288,15 +291,15 @@ mod tests {
 
         for a in 0..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
         world.set_atom(0, atom, &io);
-        world.mov_atom(0, max_offs + 1, atom, &io);
+        world.mov_atom(0, max_offs + 1, &io);
         assert_eq!(world.get_atom(0), atom);
         for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
 
-        world.mov_atom(max_offs + 1, 1, atom, &io);
+        world.mov_atom(max_offs + 1, 1, &io);
         assert_eq!(world.get_atom(0), atom);
         for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
 
-        world.mov_atom(max_offs + 1, max_offs + 2, atom, &io);
+        world.mov_atom(max_offs + 1, max_offs + 2, &io);
         assert_eq!(world.get_atom(0), atom);
         for a in 1..max_offs { assert_eq!(world.get_atom(a as Offs), ATOM_EMPTY) }
     }

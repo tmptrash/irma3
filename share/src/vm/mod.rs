@@ -89,23 +89,24 @@ impl VM {
         buf.clear();
         stack.push(self.offs);
 
-        while !stack.empty() {                                            // before while, stack should have >= 1 atoms
+        while !stack.empty() {                                            // before while, stack should have >= 1 atom
             offs = stack.last().unwrap();                                 // offset of atom before move
+            if buf.contains(&offs) { stack.shrink(); continue }           // this atom was already moved
             atom = wrld.get_atom(offs);                                   // atom we have to move
             to_offs = wrld.get_offs(offs, dir);                           // destination atom position
-            if is_atom(wrld.get_atom(to_offs)) {                          // can't move atom. Another one is there
+            if wrld.is_atom(to_offs) {                                    // can't move atom. Another one is there
                 stack.push(to_offs);
                 continue;
             }
             stack.shrink();                                               // destination cell is empty, can move there
-            wrld.mov_atom(offs, to_offs, atom, &core.io); // move atom physically
+            wrld.mov_atom(offs, to_offs, &core.io);                       // move atom physically
             buf.insert(to_offs);                                          // mark atom as "already moved"
             self.energy -= mov_energy;                                    // decrease energy for every moved atom
             // update vm bond of moved atom---------------------------------------------------------------------------------
             d0 = get_vm_dir(atom);                                        // get VM dir of moved atom
             d1 = DIR_MOV_ATOM[d0 as I][dir as I];                         // final dir of moved atom
-            o  = wrld.get_offs(offs, d0);                             // offs of near atom
-            if d1 == DIR_NO { buf.insert(o); }                            // near atom is to far, will add it later
+            o  = wrld.get_offs(offs, d0);                                 // offs of near atom
+            if d1 == DIR_NO { stack.push(o); }                            // near atom is to far, will add it later
             else {
                 set_vm_dir(&mut atom, d1);                            // distance between atoms is 1. update bond
                 set_vm_bond(&mut atom);
@@ -126,7 +127,7 @@ impl VM {
                 d0 = get_dir2(atom);                                      // get then dir of if moved atom
                 d1 = DIR_MOV_ATOM[d0 as I][dir as I];                     // final dir of if moved atom
                 o  = wrld.get_offs(offs, d0);                         // offs of near atom
-                if d1 == DIR_NO { buf.insert(o); }                        // near atom is to far, will add it later
+                if d1 == DIR_NO { stack.push(o); }                        // near atom is to far, will add it later
                 else {
                     set_dir2(&mut atom, d1);                          // distance between atoms is 1. update bond
                     wrld.set_atom(to_offs, atom, &core.io);
@@ -293,6 +294,7 @@ mod tests {
         pvmdata.world.set_atom(0, 0b0010_0000_1100_0000, pio); // atom: mov right
         assert_eq!(pvmdata.world.get_atom(0), 0b0010_0000_1100_0000);
         pvms.data[0].run_atom(pcore);
+        assert_eq!(pvmdata.world.get_atom(1), 0b0010_0000_1100_0000);
 
         remove_file(&cfg_file);
     }
