@@ -17,7 +17,10 @@ pub fn get_vm_dir(atom: Atom) -> Dir { ((atom & ATOM_VM_DIR_MASK) >> ATOM_VM_DIR
 ///
 /// Sets new atom direction. All other bits keep the same
 ///
-pub fn set_vm_dir(atom: &mut Atom, dir: Dir) { *atom = (*atom & ATOM_VM_DIR_UNMASK) | ((dir as Atom) << ATOM_VM_DIR_SHIFT) }
+pub fn set_vm_dir(atom: &mut Atom, dir: Dir) {
+    *atom = (*atom & ATOM_VM_DIR_UNMASK) | ((dir as Atom) << ATOM_VM_DIR_SHIFT);
+    set_vm_bond(atom)
+}
 ///
 /// Checks if atom has vm bond
 ///
@@ -57,7 +60,10 @@ pub fn get_dir2(atom: Atom) -> Dir { ((atom & ATOM_DIR2_MASK) >> ATOM_DIR2_SHIFT
 ///
 /// Sets then atom direction. All other bits keep the same
 ///
-pub fn set_dir2(atom: &mut Atom, dir: Dir) { *atom = (*atom & ATOM_DIR2_UNMASK) | ((dir as Atom) << ATOM_DIR2_SHIFT) }
+pub fn set_dir2(atom: &mut Atom, dir: Dir) {
+    *atom = (*atom & ATOM_DIR2_UNMASK) | ((dir as Atom) << ATOM_DIR2_SHIFT);
+    set_dir2_bond(atom)
+}
 ///
 /// Checks if atom has dir2 bond
 ///
