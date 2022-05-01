@@ -1,6 +1,6 @@
 //!
 //! Virtual Machine module. Implements all atom types and related stuff. Should be
-//! optimized for speed. There are many virtual machines in a world at the same time.
+//! optimized for speed. There a&&re many virtual machines in a world at the same time.
 //! One VM runs one molecule.
 //! 
 pub mod buf;
@@ -265,7 +265,9 @@ impl VM {
 
 #[cfg(test)]
 mod tests {
+    use std::ffi::c_void;
     use std::{fs, path::Path};
+    use crate::global::ATOM_EMPTY;
     use crate::{cfg::Config, Core, io::IO, vm::vmdata::VMData};
     use crate::utils::{id, vec::Vector};
 
@@ -277,10 +279,9 @@ mod tests {
     fn remove_file(file: &str) {
         if Path::new(file).exists() { assert_eq!(fs::remove_file(file).is_ok(), true) }
     }
-    #[test]
-    fn test_new() {
+    fn init(vms: i32) -> (String, *mut c_void) {
         let cfg_file = id() + ".json";
-        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10, "MAX_VM_AMOUNT": 1}"#);
+        create_file(&cfg_file, &format!(r#"{{"WIDTH": 10, "HEIGHT": 10, "MAX_VM_AMOUNT": {}}}"#, vms));
 
         let cfg = Config::new(&cfg_file);
         let vm_amount = cfg.MAX_VM_AMOUNT();
@@ -294,16 +295,89 @@ mod tests {
             io: IO::new(),
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         })).cast();
+
+        (cfg_file, core)
+    }
+    #[test]
+    fn test_run_atom_empty() {
+        let (cfg_file, core) = init(1);
         let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
         let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
         let pio = unsafe{ &mut (*(core as *mut Core)).io };
         let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom = 0b0010_0000_1100_0000;
 
         pvms.add(VM::new(100, 0));
-        pvmdata.world.set_atom(0, 0b0010_0000_1100_0000, pio); // atom: mov right
-        assert_eq!(pvmdata.world.get_atom(0), 0b0010_0000_1100_0000);
+        pvmdata.world.set_atom(1, atom, pio); // atom: mov right
+        assert_eq!(pvmdata.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(1), atom);
         pvms.data[0].run_atom(pcore);
-        assert_eq!(pvmdata.world.get_atom(1), 0b0010_0000_1100_0000);
+        assert_eq!(pvmdata.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(1), atom);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_run_atom_spl() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom = 0b0110_0000_1100_0000;
+
+        pvms.add(VM::new(100, 0));
+        pvmdata.world.set_atom(0, atom, pio); // atom spl
+        assert_eq!(pvmdata.world.get_atom(0), atom);
+        assert_eq!(pvmdata.world.get_atom(1), ATOM_EMPTY);
+        pvms.data[0].run_atom(pcore);
+        assert_eq!(pvmdata.world.get_atom(0), atom);
+        assert_eq!(pvmdata.world.get_atom(1), ATOM_EMPTY);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_one_atom_mov() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom = 0b0010_0000_1100_0000;
+
+        pvms.add(VM::new(100, 0));
+        pvmdata.world.set_atom(0, atom, pio); // atom: mov right
+        assert_eq!(pvmdata.world.get_atom(0), atom);
+        pvms.data[0].atom_mov(atom, pcore);
+        assert_eq!(pvmdata.world.get_atom(1), atom);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_two_atom_mov() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0010_0000_1100_0000; // mov
+        let atom1 = 0b0110_0000_1100_0000; // spl
+        
+        // atoms: [m]->[s]
+        pvms.add(VM::new(100, 0));
+        pvmdata.world.set_atom(0, atom0, pio); // atom0: mov right
+        pvmdata.world.set_atom(1, atom1, pio); // atom1: spl right
+        assert_eq!(pvmdata.world.get_atom(0), atom0);
+        assert_eq!(pvmdata.world.get_atom(1), atom1);
+        pvms.data[0].atom_mov(atom0, pcore);
+        assert_eq!(pvmdata.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(1), atom0);
+        assert_eq!(pvmdata.world.get_atom(2), atom1);
+        assert_eq!(pvmdata.world.get_atom(3), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(10), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(11), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(12), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(13), ATOM_EMPTY);
 
         remove_file(&cfg_file);
     }
