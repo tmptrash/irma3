@@ -1,6 +1,6 @@
 //!
 //! Virtual Machine module. Implements all atom types and related stuff. Should be
-//! optimized for speed. There a&&re many virtual machines in a world at the same time.
+//! optimized for speed. There are many virtual machines in a world at the same time.
 //! One VM runs one molecule.
 //! 
 pub mod buf;
@@ -74,7 +74,7 @@ impl VM {
     ///
     fn atom_mov(&mut self, mut atom: Atom, core: &mut Core) -> bool {
         let mut offs: Offs;
-        let mut to_offs: Offs;
+        let mut to_offs: Offs = self.offs;
         let mut dir0: Dir;
         let mut dir1: Dir;
         let mut a: Atom;
@@ -91,7 +91,7 @@ impl VM {
 
         while !stack.empty() {                                            // before while, stack should have >= 1 atom
             offs = stack.last().unwrap();                                 // offset of atom before move
-            if moved.contains(&offs) { stack.shrink(); continue }           // this atom was already moved
+            if moved.contains(&offs) { stack.shrink(); continue }         // this atom was already moved
             to_offs = wrld.get_offs(offs, dir);                           // destination atom position
             if wrld.is_atom(to_offs) {                                    // can't move atom. Another one is there
                 stack.push(to_offs);
@@ -104,56 +104,61 @@ impl VM {
             atom = wrld.get_atom(to_offs);                                // atom we have to move
             // update vm bond of moved atom---------------------------------------------------------------------------------
             dir0 = get_vm_dir(atom);                                      // get VM dir of moved atom
-            dir1 = DIR_MOV_ATOM[dir0 as I][dir as I];                     // final dir of moved atom
-            o = wrld.get_offs(offs, dir0);                                // offs of near atom
-            if dir1 == DIR_NO { stack.push(o); }                          // near atom is to far, will add it later
-            else {
-                set_vm_dir(&mut atom, dir1);                              // distance between atoms is 1. update bond
-                wrld.set_atom(to_offs, atom, &core.io);
-                // update vm bond of near atom------------------------------------------------------------------------------
-                dir0 = DIR_REV[dir0 as I];                                // get near atom's dir to moved atom
-                a = wrld.get_atom(o);                                     // near atom
-                if get_vm_dir(a) == dir0 {                                // near atom has vm bond with moved
-                    dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];            // final dir of near atom
-                    set_vm_dir(&mut a, dir1);
-                    wrld.set_atom(o, a, &core.io);
-                }
-                // update then bond of near atom---------------------------------------------------------------------------
-                if get_dir2(a) == dir0 {                                  // near atom has a then bond with moved
-                    dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];            // final dir of near atom
-                    set_dir2(&mut a, dir1);
-                    wrld.set_atom(o, a, &core.io);
-                }
-            }
-
-            if get_type(atom) == ATOM_IF {                                // if atom has additional then bond
-                // update then bond of moved atom---------------------------------------------------------------------------
-                dir0 = get_dir2(atom);                                      // get then dir of if moved atom
-                dir1 = DIR_MOV_ATOM[dir0 as I][dir as I];                     // final dir of if moved atom
-                o  = wrld.get_offs(offs, dir0);                         // offs of near atom
-                if dir1 == DIR_NO { stack.push(o); }                        // near atom is to far, will add it later
-                else {
-                    set_dir2(&mut atom, dir1);                          // distance between atoms is 1. update bond
+            if dir0 != DIR_NO {                                           // there is no near atom
+                dir1 = DIR_MOV_ATOM[dir0 as I][dir as I];                 // final dir of moved atom
+                o = wrld.get_offs(offs, dir0);                            // offs of near atom
+                if dir1 == DIR_NO {                                       // near atom is to far, will add it later
+                    if wrld.is_atom(o) { stack.push(o); }
+                } else {
+                    set_vm_dir(&mut atom, dir1);                          // distance between atoms is 1. update bond
                     wrld.set_atom(to_offs, atom, &core.io);
-                    // update then bond of near atom------------------------------------------------------------------------
-                    dir0 = DIR_REV[dir0 as I];                                // get near atom's dir to moved atom
-                    a  = wrld.get_atom(o);                           // near atom
-                    if get_dir2(a) == dir0 {                           // near atom has a bond with moved
-                        dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];            // final dir of near atom
-                        set_dir2(&mut a, dir1);
-                        wrld.set_atom(o, a, &core.io);
-                    }
-                    // update vm bond of near atom--------------------------------------------------------------------------
+                    // update vm bond of near atom------------------------------------------------------------------------------
+                    dir0 = DIR_REV[dir0 as I];                            // get near atom's dir to moved atom
+                    a = wrld.get_atom(o);                                 // near atom
                     if get_vm_dir(a) == dir0 {                            // near atom has vm bond with moved
                         dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];        // final dir of near atom
                         set_vm_dir(&mut a, dir1);
                         wrld.set_atom(o, a, &core.io);
                     }
+                    // update then bond of near atom---------------------------------------------------------------------------
+                    if get_dir2(a) == dir0 {                              // near atom has a then bond with moved
+                        dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];        // final dir of near atom
+                        set_dir2(&mut a, dir1);
+                        wrld.set_atom(o, a, &core.io);
+                    }
+                }
+            }
+            if get_type(atom) == ATOM_IF {                                // if atom has additional then bond
+                // update then bond of moved atom---------------------------------------------------------------------------
+                dir0 = get_dir2(atom);                                      // get then dir of if moved atom
+                if dir0 != DIR_NO {                                       // there is no near atom
+                    dir1 = DIR_MOV_ATOM[dir0 as I][dir as I];                 // final dir of if moved atom
+                    o  = wrld.get_offs(offs, dir0);                     // offs of near atom
+                    if dir1 == DIR_NO {                                   // near atom is to far, will add it later
+                        if wrld.is_atom(o) { stack.push(o); }
+                    } else {
+                        set_dir2(&mut atom, dir1);                      // distance between atoms is 1. update bond
+                        wrld.set_atom(to_offs, atom, &core.io);
+                        // update then bond of near atom------------------------------------------------------------------------
+                        dir0 = DIR_REV[dir0 as I];                        // get near atom's dir to moved atom
+                        a  = wrld.get_atom(o);                            // near atom
+                        if get_dir2(a) == dir0 {                          // near atom has a bond with moved
+                            dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];    // final dir of near atom
+                            set_dir2(&mut a, dir1);
+                            wrld.set_atom(o, a, &core.io);
+                        }
+                        // update vm bond of near atom--------------------------------------------------------------------------
+                        if get_vm_dir(a) == dir0 {                        // near atom has vm bond with moved
+                            dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];    // final dir of near atom
+                            set_vm_dir(&mut a, dir1);
+                            wrld.set_atom(o, a, &core.io);
+                        }
+                    }
                 }
             }
         }
         if has_vm_bond(atom) {                                            // update VM current atom offs
-            self.offs = wrld.get_offs(self.offs, get_vm_dir(atom));
+            self.offs = wrld.get_offs(to_offs, get_vm_dir(atom));
         }
 
         true
@@ -354,15 +359,15 @@ mod tests {
         remove_file(&cfg_file);
     }
     #[test]
-    fn test_two_atom_mov() {
+    fn test_two_atom_mov0() {
         let (cfg_file, core) = init(1);
         let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
         let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
         let pio = unsafe{ &mut (*(core as *mut Core)).io };
         let pcore = unsafe{ &mut *(core as *mut Core) };
-        let atom0 = 0b0010_0000_1100_0000; // mov
+        let atom0 = 0b0010_1110_1100_0000; // mov
         let atom1 = 0b0110_0000_1100_0000; // spl
-        
+
         // atoms: [m]->[s]
         pvms.add(VM::new(100, 0));
         pvmdata.world.set_atom(0, atom0, pio); // atom0: mov right
@@ -378,6 +383,37 @@ mod tests {
         assert_eq!(pvmdata.world.get_atom(11), ATOM_EMPTY);
         assert_eq!(pvmdata.world.get_atom(12), ATOM_EMPTY);
         assert_eq!(pvmdata.world.get_atom(13), ATOM_EMPTY);
+        assert_eq!(pvms.data[0].get_offs(), 2);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_two_atom_mov1() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0010_1110_1100_0000; // mov
+        let atom1 = 0b0110_0000_1100_0000; // spl
+
+        // atoms: [m]
+        //           [s]
+        pvms.add(VM::new(100, 0));
+        pvmdata.world.set_atom(0, atom0, pio); // atom0: mov right
+        pvmdata.world.set_atom(1, atom1, pio); // atom1: spl right
+        assert_eq!(pvmdata.world.get_atom(0), atom0);
+        assert_eq!(pvmdata.world.get_atom(1), atom1);
+        pvms.data[0].atom_mov(atom0, pcore);
+        assert_eq!(pvmdata.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(1), atom0);
+        assert_eq!(pvmdata.world.get_atom(2), atom1);
+        assert_eq!(pvmdata.world.get_atom(3), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(10), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(11), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(12), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(13), ATOM_EMPTY);
+        assert_eq!(pvms.data[0].get_offs(), 2);
 
         remove_file(&cfg_file);
     }

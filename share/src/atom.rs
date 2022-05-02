@@ -13,7 +13,10 @@ pub fn get_type(atom: Atom) -> Atom { (atom & ATOM_TYPE_MASK) >> ATOM_TYPE_SHIFT
 ///
 /// Returns next atom direction for VM
 ///
-pub fn get_vm_dir(atom: Atom) -> Dir { ((atom & ATOM_VM_DIR_MASK) >> ATOM_VM_DIR_SHIFT) as Dir }
+pub fn get_vm_dir(atom: Atom) -> Dir {
+    if !has_vm_bond(atom) { return DIR_NO }
+    ((atom & ATOM_VM_DIR_MASK) >> ATOM_VM_DIR_SHIFT) as Dir
+}
 ///
 /// Sets new atom direction. All other bits keep the same
 ///
