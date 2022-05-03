@@ -124,7 +124,7 @@ impl VM {
                         wrld.set_atom(o, a, &core.io);
                     }
                     // update then bond of near atom---------------------------------------------------------------------------
-                    if get_dir2(a) == dir0 {                              // near atom has a then bond with moved
+                    if get_type(a) == ATOM_IF && get_dir2(a) == dir0 {    // near atom has a then bond with moved
                         dir1 = DIR_NEAR_ATOM[dir0 as I][dir as I];        // final dir of near atom
                         set_dir2(&mut a, dir1);
                         wrld.set_atom(o, a, &core.io);
@@ -426,26 +426,27 @@ mod tests {
         let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
         let pio = unsafe{ &mut (*(core as *mut Core)).io };
         let pcore = unsafe{ &mut *(core as *mut Core) };
-        let atom0 = 0b0010_1110_1100_0000; // mov
-        let atom1 = 0b0110_0000_1100_0000; // spl
+        let atom0 = 0b0011_0010_1100_0000; // mov
+        let atom1 = 0b0110_0010_0000_0000; // spl
 
         // atoms: [m]
+        //          \\
         //           [s]
         pvms.add(VM::new(100, 0));
-        pvmdata.world.set_atom(0, atom0, pio); // atom0: mov right
-        pvmdata.world.set_atom(1, atom1, pio); // atom1: spl
+        pvmdata.world.set_atom(0, atom0, pio);  // atom0: mov right
+        pvmdata.world.set_atom(11, atom1, pio); // atom1: spl
         assert_eq!(pvmdata.world.get_atom(0), atom0);
-        assert_eq!(pvmdata.world.get_atom(1), atom1);
+        assert_eq!(pvmdata.world.get_atom(11), atom1);
         pvms.data[0].atom_mov(atom0, pcore);
         assert_eq!(pvmdata.world.get_atom(0), ATOM_EMPTY);
-        assert_eq!(pvmdata.world.get_atom(1), atom0);
-        assert_eq!(pvmdata.world.get_atom(2), atom1);
+        assert_eq!(pvmdata.world.get_atom(1), 0b0011_0110_1100_0000);
+        assert_eq!(pvmdata.world.get_atom(2), ATOM_EMPTY);
         assert_eq!(pvmdata.world.get_atom(3), ATOM_EMPTY);
         assert_eq!(pvmdata.world.get_atom(10), ATOM_EMPTY);
-        assert_eq!(pvmdata.world.get_atom(11), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(11), 0b0110_0110_0000_0000);
         assert_eq!(pvmdata.world.get_atom(12), ATOM_EMPTY);
         assert_eq!(pvmdata.world.get_atom(13), ATOM_EMPTY);
-        assert_eq!(pvms.data[0].get_offs(), 2);
+        assert_eq!(pvms.data[0].get_offs(), 11);
 
         remove_file(&cfg_file);
     }
