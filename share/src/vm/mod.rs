@@ -464,8 +464,8 @@ mod tests {
 
         // atoms: [s]=[m] ->
         pvms.add(VM::new(100, 1));
-        pvmdata.world.set_atom(0, atom0, pio);  // atom0: spl right
-        pvmdata.world.set_atom(1, atom1, pio);  // atom1: mov
+        pvmdata.world.set_atom(0, atom0, pio);  // atom0: spl
+        pvmdata.world.set_atom(1, atom1, pio);  // atom1: mov right
         assert_eq!(pvmdata.world.get_atom(0), atom0);
         assert_eq!(pvmdata.world.get_atom(1), atom1);
         pvms.data[0].atom_mov(atom1, pcore);
@@ -497,8 +497,8 @@ mod tests {
         //           [m]
         //              v
         pvms.add(VM::new(100, 11));
-        pvmdata.world.set_atom(0, atom0, pio);   // atom0: spl right
-        pvmdata.world.set_atom(11, atom1, pio);  // atom1: mov
+        pvmdata.world.set_atom(0, atom0, pio);   // atom0: spl
+        pvmdata.world.set_atom(11, atom1, pio);  // atom1: mov right
         assert_eq!(pvmdata.world.get_atom(0), atom0);
         assert_eq!(pvmdata.world.get_atom(11), atom1);
         pvms.data[0].atom_mov(atom1, pcore);
@@ -515,6 +515,42 @@ mod tests {
         assert_eq!(pvmdata.world.get_atom(22), atom1);
         assert_eq!(pvmdata.world.get_atom(23), ATOM_EMPTY);
         assert_eq!(pvms.data[0].get_offs(), 11);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_two_atom_mov5() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0110_1110_0000_0000; // spl
+        let atom1 = 0b0011_1110_1100_0000; // mov
+        let atom2 = 0b0110_0000_0000_0000; // spl
+
+        // atoms: [s]=[m][s] >
+        pvms.add(VM::new(100, 1));
+        pvmdata.world.set_atom(0, atom0, pio);   // atom0: spl
+        pvmdata.world.set_atom(1, atom1, pio);   // atom1: mov right
+        pvmdata.world.set_atom(2, atom2, pio);   // atom2: spl
+        assert_eq!(pvmdata.world.get_atom(0), atom0);
+        assert_eq!(pvmdata.world.get_atom(1), atom1);
+        assert_eq!(pvmdata.world.get_atom(2), atom2);
+        pvms.data[0].atom_mov(atom1, pcore);
+        assert_eq!(pvmdata.world.get_atom(0), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(1), atom0);
+        assert_eq!(pvmdata.world.get_atom(2), atom1);
+        assert_eq!(pvmdata.world.get_atom(3), atom2);
+        assert_eq!(pvmdata.world.get_atom(4), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(10), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(11), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(12), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(13), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(21), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(22), ATOM_EMPTY);
+        assert_eq!(pvmdata.world.get_atom(23), ATOM_EMPTY);
+        assert_eq!(pvms.data[0].get_offs(), 1);
 
         remove_file(&cfg_file);
     }
