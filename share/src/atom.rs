@@ -83,7 +83,7 @@ pub fn reset_dir2_bond(atom: &mut Atom) { *atom &= ATOM_DIR2_BOND_UNMASK }
 
 #[cfg(test)]
 mod tests {
-    use crate::atom;
+    use crate::{atom, global::DIR_NO};
 
     #[test]
     fn test_is_atom() {
@@ -116,11 +116,13 @@ mod tests {
     }
     #[test]
     fn test_get_vm_dir() {
-        assert_eq!(atom::get_vm_dir(0b0000_0000_0000_0000), 0);
-        assert_eq!(atom::get_vm_dir(0b0000_0100_0000_0000), 1);
-        assert_eq!(atom::get_vm_dir(0b0000_1000_0000_0000), 2);
-        assert_eq!(atom::get_vm_dir(0b0001_0000_0000_0000), 4);
+        assert_eq!(atom::get_vm_dir(0b0000_0000_0000_0000), DIR_NO);
+        assert_eq!(atom::get_vm_dir(0b0000_0110_0000_0000), 1);
+        assert_eq!(atom::get_vm_dir(0b0000_1010_0000_0000), 2);
+        assert_eq!(atom::get_vm_dir(0b0001_0010_0000_0000), 4);
         assert_eq!(atom::get_vm_dir(0b1111_0011_1111_1111), 4);
+        assert_eq!(atom::get_vm_dir(0b0001_0010_0000_0000), 4);
+        assert_eq!(atom::get_vm_dir(0b1111_1101_1111_1111), DIR_NO);
     }
     #[test]
     fn test_set_vm_dir() {

@@ -124,13 +124,13 @@ fn main() {
     plugins.init(core);
 
     // tmp code
-    let atom0 = 0b0110_1110_0000_0000; // spl
-    let atom1 = 0b0011_1110_1100_0000; // mov
-    let atom2 = 0b0110_0000_0000_0000; // spl
-    vms.add(VM::new(100, 1));
+    let atom0 = 0b0110_0000_0000_0000; // spl
+    let atom1 = 0b0110_0000_0000_0000; // spl
+    let atom2 = 0b0010_0010_1100_0000; // mov
+    vms.add(VM::new(100, 11));
     core.vm_data.world.set_atom(0, atom0, &core.io);
     core.vm_data.world.set_atom(1, atom1, &core.io);
-    core.vm_data.world.set_atom(2, atom2, &core.io);
+    core.vm_data.world.set_atom(11, atom2, &core.io);
 
     //
     // Main loop
