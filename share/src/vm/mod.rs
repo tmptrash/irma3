@@ -513,4 +513,32 @@ mod tests {
 
         remove_file(&cfg_file);
     }
+    #[test]
+    fn test_two_atom_mov7() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0111_0010_0000_0000; // spl
+        let atom1 = 0b0111_1010_0000_0000; // spl
+        let atom2 = 0b0110_0010_0000_0000; // spl
+        let atom3 = 0b0110_1010_0000_0000; // spl
+        let atom4 = 0b0010_0111_0000_0000; // mov
+
+        // atoms:
+        //        [s]
+        //      //   \\
+        //     [s][m][s]
+        //      \\ | //
+        //        [s]  \
+        //              v
+        pvms.add(VM::new(100, 11));
+        set_atoms(&vec![(1, atom0), (12, atom1), (21, atom2), (10, atom3), (11, atom4)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_mov(atom2, pcore);
+        check_offs(&vec![(12, atom0), (23, atom1), (32, atom2), (21, atom3), (22, atom4)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 12);
+
+        remove_file(&cfg_file);
+    }
 }

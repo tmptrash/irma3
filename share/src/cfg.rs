@@ -118,8 +118,8 @@ impl Config {
         };
 
         inf!("Create global configuration");
-        let width:  usize = Config::to_i64(&cfg["WIDTH"], 1024) as usize;
-        let height: usize = Config::to_i64(&cfg["HEIGHT"], 1024) as usize;
+        let width:  usize = Config::to_i64(&cfg["WIDTH"], 10) as usize;
+        let height: usize = Config::to_i64(&cfg["HEIGHT"], 10) as usize;
 
         Config {
             // read only configuration
