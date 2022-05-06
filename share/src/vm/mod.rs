@@ -309,7 +309,7 @@ mod tests {
 
         (cfg_file, core)
     }
-    fn check_offs(offs: &Vec<(Offs, Atom)>, world: &World, size: usize) {
+    fn check_atoms(offs: &Vec<(Offs, Atom)>, world: &World, size: usize) {
         for o in 0..size {
             let a = world.get_atom(o as isize);
             if !offs.contains(&(o as isize, a)) { assert_eq!(a, ATOM_EMPTY) }
@@ -320,7 +320,7 @@ mod tests {
         for (o, a) in atoms {
             world.set_atom(*o, *a, io);
         }
-        check_offs(&atoms, world, size);
+        check_atoms(&atoms, world, size);
     }
 
     #[test]
@@ -335,7 +335,7 @@ mod tests {
         pvms.add(VM::new(100, 0));
         set_atoms(&vec![(1, atom)], &mut pvmdata.world, pio, 100); // atom: mov right
         pvms.data[0].run_atom(pcore);
-        check_offs(&vec![(1, atom)], &pvmdata.world, 100);
+        check_atoms(&vec![(1, atom)], &pvmdata.world, 100);
 
         remove_file(&cfg_file);
     }
@@ -351,7 +351,7 @@ mod tests {
         pvms.add(VM::new(100, 0));
         set_atoms(&vec![(0, atom)], &mut pvmdata.world, pio, 100); // atom spl
         pvms.data[0].run_atom(pcore);
-        check_offs(&vec![(0, atom)], &pvmdata.world, 100);
+        check_atoms(&vec![(0, atom)], &pvmdata.world, 100);
 
         remove_file(&cfg_file);
     }
@@ -385,7 +385,7 @@ mod tests {
         pvms.add(VM::new(100, 0));
         set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom0, pcore);
-        check_offs(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
+        check_atoms(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 2);
 
         remove_file(&cfg_file);
@@ -404,7 +404,7 @@ mod tests {
         pvms.add(VM::new(100, 0));
         set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom0, pcore);
-        check_offs(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
+        check_atoms(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 2);
 
         remove_file(&cfg_file);
@@ -425,7 +425,7 @@ mod tests {
         pvms.add(VM::new(100, 0));
         set_atoms(&vec![(0, atom0), (11, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom0, pcore);
-        check_offs(&vec![(1, 0b0011_0110_1100_0000), (11, 0b0110_0110_0000_0000)], &pvmdata.world, 100);
+        check_atoms(&vec![(1, 0b0011_0110_1100_0000), (11, 0b0110_0110_0000_0000)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 11);
 
         remove_file(&cfg_file);
@@ -444,7 +444,7 @@ mod tests {
         pvms.add(VM::new(100, 1));
         set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom1, pcore);
-        check_offs(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
+        check_atoms(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
 
         remove_file(&cfg_file);
@@ -466,7 +466,7 @@ mod tests {
         pvms.add(VM::new(100, 11));
         set_atoms(&vec![(0, atom0), (11, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom1, pcore);
-        check_offs(&vec![(11, atom0), (22, atom1)], &pvmdata.world, 100);
+        check_atoms(&vec![(11, atom0), (22, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 11);
 
         remove_file(&cfg_file);
@@ -486,7 +486,7 @@ mod tests {
         pvms.add(VM::new(100, 1));
         set_atoms(&vec![(0, atom0), (1, atom1), (2, atom2)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom1, pcore);
-        check_offs(&vec![(1, atom0), (2, atom1), (3, atom2)], &pvmdata.world, 100);
+        check_atoms(&vec![(1, atom0), (2, atom1), (3, atom2)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
 
         remove_file(&cfg_file);
@@ -508,7 +508,7 @@ mod tests {
         pvms.add(VM::new(100, 11));
         set_atoms(&vec![(0, atom0), (1, atom1), (11, atom2)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom2, pcore);
-        check_offs(&vec![(1, atom0), (2, atom1), (12, atom2)], &pvmdata.world, 100);
+        check_atoms(&vec![(1, atom0), (2, atom1), (12, atom2)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
 
         remove_file(&cfg_file);
@@ -535,8 +535,8 @@ mod tests {
         //              v
         pvms.add(VM::new(100, 11));
         set_atoms(&vec![(1, atom0), (12, atom1), (21, atom2), (10, atom3), (11, atom4)], &mut pvmdata.world, pio, 100);
-        pvms.data[0].atom_mov(atom2, pcore);
-        check_offs(&vec![(12, atom0), (23, atom1), (32, atom2), (21, atom3), (22, atom4)], &pvmdata.world, 100);
+        pvms.data[0].atom_mov(atom4, pcore);
+        check_atoms(&vec![(12, atom0), (23, atom1), (32, atom2), (21, atom3), (22, atom4)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 12);
 
         remove_file(&cfg_file);
