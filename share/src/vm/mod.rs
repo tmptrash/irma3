@@ -634,4 +634,23 @@ mod tests {
 
         remove_file(&cfg_file);
     }
+    #[test]
+    fn test_fix2() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0100_0000_1111_1000; // fix
+        let atom1 = 0b0110_0000_0000_0000; // spl
+
+        // atoms: [f][s]
+        pvms.add(VM::new(100, 0));
+        set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_fix(atom0, pcore);
+        check_atoms(&vec![(0, atom0), (1, 0b0111_1110_0000_0000)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 0);
+
+        remove_file(&cfg_file);
+    }
 }
