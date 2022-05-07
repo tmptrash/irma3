@@ -175,30 +175,33 @@ impl VM {
     }
     ///
     /// Implements fix atom. Creates vm bond between two atoms. If vm bond is already exist, than
-    /// try to create if/then bond for if atom. Consumes energy.
+    /// try to create if/then bond for if atom.
     ///
     fn atom_fix(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs0 = core.vm_data.world.get_offs(self.offs, get_dir1(atom)); // gets first near atom offs to fix
+        if !core.vm_data.world.is_atom(offs0) { return false }            // no first near atom to fix
         let mut atom0 = core.vm_data.world.get_atom(offs0);               // gets first near atom to fix
-        if !is_atom(atom0) { return false }                               // no first near atom to fix
-        let d0 = get_dir2(atom);
-        if !is_atom(core.vm_data.world.get_dir_atom(offs0, d0)) { return false } // there is no second near atom to fix
+        let d1 = get_dir2(atom);
+        if !core.vm_data.world.is_atom(core.vm_data.world.get_offs(offs0, d1)) { return false } // there is no second near atom to fix
 
         // fix vm bond------------------------------------------------------------------------------------------------------
         if !has_vm_bond(atom0) {                                          // first near atom has no vm bond
-            set_vm_dir(&mut atom0, d0);
+            set_vm_dir(&mut atom0, d1);
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
-            if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
+            if has_vm_bond(atom) {
+                self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+            }
             self.energy -= core.cfg.atoms().fix_energy;
             return true;
         }
         if get_type(atom0) != ATOM_IF { return false }                    // only if atom has if and then bonds
         // fix then bond----------------------------------------------------------------------------------------------------
-        if !has_dir2_bond(atom0) {                                       // first near atom has no then bond
-            set_dir2(&mut atom0, d0);
-            set_dir2_bond(&mut atom0);
+        if !has_dir2_bond(atom0) {                                        // first near atom has no then bond
+            set_dir2(&mut atom0, d1);
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
-            if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
+            if has_vm_bond(atom) {
+                self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+            }
             self.energy -= core.cfg.atoms().fix_energy;
             return true;
         }
@@ -586,6 +589,48 @@ mod tests {
         pvms.data[0].atom_mov(atom0, pcore);
         check_atoms(&vec![(11, atom0), (10, 0b1001_0010_0010_0110), (21, 0b1000_0010_0000_0110)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 11);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_fix() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0100_0000_1001_1000; // fix
+        let atom1 = 0b0110_0000_0000_0000; // spl
+        let atom2 = 0b0110_0000_0000_0000; // spl
+
+        // atoms:    [s][s]
+        //        [f]
+        pvms.add(VM::new(100, 10));
+        set_atoms(&vec![(10, atom0), (1, atom1), (2, atom2)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_fix(atom0, pcore);
+        check_atoms(&vec![(10, atom0), (1, 0b0110_1110_0000_0000), (2, atom2)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 10);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_fix1() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0100_0000_1001_1000; // fix
+        let atom1 = 0b1000_1110_0000_0000; // spl
+        let atom2 = 0b0110_0000_0000_0000; // spl
+
+        // atoms:    [s]-[s]
+        //        [f]
+        pvms.add(VM::new(100, 10));
+        set_atoms(&vec![(10, atom0), (1, atom1), (2, atom2)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_fix(atom0, pcore);
+        check_atoms(&vec![(10, atom0), (1, 0b1000_1110_0001_1010), (2, atom2)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 10);
 
         remove_file(&cfg_file);
     }
