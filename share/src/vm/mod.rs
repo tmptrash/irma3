@@ -105,6 +105,7 @@ impl VM {
             wrld.mov_atom(offs, to_offs, &core.io);                       // move atom physically
             moved.insert(to_offs);                                        // mark atom as "already moved"
             self.energy -= mov_energy;                                    // decrease energy for every moved atom
+            if self.energy < 0 { return false }                           // no energy to continue
             atom = wrld.get_atom(to_offs);                                // atom we have to move
             // update vm bond of moved atom---------------------------------------------------------------------------------
             dir0 = get_vm_dir(atom);                                      // get VM dir of moved atom
@@ -162,8 +163,12 @@ impl VM {
             }
         }
         a = wrld.get_atom(vm_offs);
-        if a != ATOM_EMPTY && has_vm_bond(a) {                            // update VM offs of current atom
-            self.offs = wrld.get_offs(vm_offs, get_vm_dir(a));
+        if a != ATOM_EMPTY {
+            if has_vm_bond(a) {                                           // update VM offs of current atom
+                self.offs = wrld.get_offs(vm_offs, get_vm_dir(a));
+            } else {
+                self.offs = vm_offs;
+            }
         }
 
         true
@@ -528,9 +533,9 @@ mod tests {
 
         // atoms:
         //        [s]
-        //      //   \\
+        //      // | \\
         //     [s][m][s]
-        //      \\ | //
+        //      \\   //
         //        [s]  \
         //              v
         pvms.add(VM::new(100, 11));
@@ -538,6 +543,49 @@ mod tests {
         pvms.data[0].atom_mov(atom4, pcore);
         check_atoms(&vec![(12, atom0), (23, atom1), (32, atom2), (21, atom3), (22, atom4)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 12);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_two_atom_mov8() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b1000_1110_0001_1110; // if
+        let atom1 = 0b0011_1111_0100_0000; // mov
+
+        // atoms:
+        //        [i]=[m]
+        //             v
+        pvms.add(VM::new(100, 1));
+        set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_mov(atom1, pcore);
+        check_atoms(&vec![(0, 0b1001_0010_0010_0110), (11, 0b0010_0011_0100_0000)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 0);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_two_atom_mov9() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0010_0001_0100_0000; // mov
+        let atom1 = 0b1000_1110_0001_1110; // if
+        let atom2 = 0b1001_1110_0011_1110; // if
+
+        // atoms:     [m]
+        //        [i]=[i]
+        //             v
+        pvms.add(VM::new(100, 1));
+        set_atoms(&vec![(1, atom0), (10, atom1), (11, atom2)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_mov(atom0, pcore);
+        check_atoms(&vec![(11, atom0), (10, 0b1001_0010_0010_0110), (21, 0b1000_0010_0000_0110)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 11);
 
         remove_file(&cfg_file);
     }
