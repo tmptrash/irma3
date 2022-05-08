@@ -180,13 +180,19 @@ impl VM {
     fn atom_fix(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs0 = core.vm_data.world.get_offs(self.offs, get_dir1(atom)); // gets first near atom offs to fix
         if !core.vm_data.world.is_atom(offs0) {                           // no first near atom to fix
-            if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
+            if has_vm_bond(atom) {
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
+            }
             return false;
         }
         let mut atom0 = core.vm_data.world.get_atom(offs0);               // gets first near atom to fix
         let d1 = get_dir2(atom);
         if !core.vm_data.world.is_atom(core.vm_data.world.get_offs(offs0, d1)) { // there is no second near atom to fix
-            if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
+            if has_vm_bond(atom) {
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
+            }
             return false;
         }
 
@@ -195,7 +201,8 @@ impl VM {
             set_vm_dir(&mut atom0, d1);
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
             if has_vm_bond(atom) {
-                self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
             }
             self.energy -= core.cfg.atoms().fix_energy;
             return true;
@@ -205,14 +212,16 @@ impl VM {
             set_dir2(&mut atom0, d1);
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
             if has_vm_bond(atom) {
-                self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
             }
             self.energy -= core.cfg.atoms().fix_energy;
             return true;
         }
         // if we are here, than there is no vm and then bonds. We just need to change VM position---------------------------
         if has_vm_bond(atom) {
-            self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+            let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+            if core.vm_data.world.is_atom(offs) { self.offs = offs }
         }
 
         false
@@ -223,27 +232,49 @@ impl VM {
     ///
     fn atom_spl(&mut self, atom: Atom, core: &mut Core) -> bool {
         let offs0 = core.vm_data.world.get_offs(self.offs, get_dir1(atom)); // gets first near atom offs to split
+        if !core.vm_data.world.is_atom(offs0) {                           // no first near atom to split
+            if has_vm_bond(atom) {
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
+            }
+            return false;
+        }
         let mut atom0 = core.vm_data.world.get_atom(offs0);               // gets first near atom to split
-        if !is_atom(atom0) { return false }                               // no first near atom to split
-        let d0 = get_dir2(atom);
-        if !is_atom(core.vm_data.world.get_dir_atom(offs0, d0)) { return false }  // there is no second near atom to split
+        let d1 = get_dir2(atom);
+        if !core.vm_data.world.is_atom(core.vm_data.world.get_offs(offs0, d1)) { // there is no second near atom to split
+            if has_vm_bond(atom) {
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
+            }
+            return false;
+        }
 
         // split vm bond----------------------------------------------------------------------------------------------------
         if has_vm_bond(atom0) {                                           // first near atom has vm bond
             reset_vm_bond(&mut atom0);
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
-            if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
+            if has_vm_bond(atom) {
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
+            }
             self.energy += core.cfg.atoms().spl_energy;
             return true;
         }
-        if get_type(atom0) != ATOM_IF { return false }
         // split then bond--------------------------------------------------------------------------------------------------
-        if has_dir2_bond(atom0) {                                         // first near atom has then bond
+        if has_dir2_bond(atom0) && get_type(atom0) == ATOM_IF {           // first near atom has then bond
             reset_dir2_bond(&mut atom0);
             core.vm_data.world.set_atom(offs0, atom0, &core.io);
-            if has_vm_bond(atom) { self.offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom)) }
+            if has_vm_bond(atom) {
+                let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(core.vm_data.world.get_atom(self.offs)));
+                if core.vm_data.world.is_atom(offs) { self.offs = offs }
+            }
             self.energy += core.cfg.atoms().spl_energy;
             return true;
+        }
+        // if we are here, than there is no vm and then bonds. We just need to change VM position---------------------------
+        if has_vm_bond(atom) {
+            let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+            if core.vm_data.world.is_atom(offs) { self.offs = offs }
         }
 
         false
