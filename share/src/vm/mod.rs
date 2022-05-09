@@ -770,4 +770,25 @@ mod tests {
 
         remove_file(&cfg_file);
     }
+    #[test]
+    fn test_spl1() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0110_1110_1101_1000; // spl
+        let atom1 = 0b1000_0000_0101_1110; // if
+        let atom2 = 0b0010_0000_1100_0000; // mov
+
+        // atoms: [s]-[m][m]
+        pvms.add(VM::new(100, 0));
+        set_atoms(&vec![(0, atom0), (1, atom1), (2, atom2)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_spl(atom0, pcore);
+        check_atoms(&vec![(0, atom0), (1, 0b1000_0000_0101_1100), (2, atom2)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 1);
+        assert_eq!(pvms.data[0].get_energy(), 100 + pcore.cfg.atoms().fix_energy);
+
+        remove_file(&cfg_file);
+    }
 }
