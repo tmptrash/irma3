@@ -384,6 +384,7 @@ mod tests {
         set_atoms(&vec![(1, atom)], &mut pvmdata.world, pio, 100); // atom: mov right
         pvms.data[0].run_atom(pcore);
         check_atoms(&vec![(1, atom)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_energy(), 100);
 
         remove_file(&cfg_file);
     }
@@ -400,6 +401,7 @@ mod tests {
         set_atoms(&vec![(0, atom)], &mut pvmdata.world, pio, 100); // atom spl
         pvms.data[0].run_atom(pcore);
         check_atoms(&vec![(0, atom)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_energy(), 100);
 
         remove_file(&cfg_file);
     }
@@ -416,6 +418,7 @@ mod tests {
         set_atoms(&vec![(0, atom)], &mut pvmdata.world, pio, 100); // atom mov right
         pvms.data[0].atom_mov(atom, pcore);
         assert_eq!(pvmdata.world.get_atom(1), atom);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy);
 
         remove_file(&cfg_file);
     }
@@ -435,6 +438,7 @@ mod tests {
         pvms.data[0].atom_mov(atom0, pcore);
         check_atoms(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 2);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 2);
 
         remove_file(&cfg_file);
     }
@@ -448,12 +452,13 @@ mod tests {
         let atom0 = 0b0010_1110_1100_0000; // mov
         let atom1 = 0b0111_1110_0000_0000; // spl
 
-        // atoms: [m]=[s]
+        // atoms: [m]=[s] >
         pvms.add(VM::new(100, 0));
         set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom0, pcore);
         check_atoms(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 2);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 2);
 
         remove_file(&cfg_file);
     }
@@ -467,7 +472,7 @@ mod tests {
         let atom0 = 0b0011_0010_1100_0000; // mov
         let atom1 = 0b0110_0010_0000_0000; // spl
 
-        // atoms: [m]
+        // atoms: [m] >
         //          \\
         //           [s]
         pvms.add(VM::new(100, 0));
@@ -475,6 +480,7 @@ mod tests {
         pvms.data[0].atom_mov(atom0, pcore);
         check_atoms(&vec![(1, 0b0011_0110_1100_0000), (11, 0b0110_0110_0000_0000)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 11);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy);
 
         remove_file(&cfg_file);
     }
@@ -488,12 +494,13 @@ mod tests {
         let atom0 = 0b0110_1110_0000_0000; // spl
         let atom1 = 0b0011_1110_1100_0000; // mov
 
-        // atoms: [s]=[m] ->
+        // atoms: [s]=[m] >
         pvms.add(VM::new(100, 1));
         set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_mov(atom1, pcore);
         check_atoms(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 2);
 
         remove_file(&cfg_file);
     }
@@ -516,6 +523,7 @@ mod tests {
         pvms.data[0].atom_mov(atom1, pcore);
         check_atoms(&vec![(11, atom0), (22, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 11);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 2);
 
         remove_file(&cfg_file);
     }
@@ -536,6 +544,7 @@ mod tests {
         pvms.data[0].atom_mov(atom1, pcore);
         check_atoms(&vec![(1, atom0), (2, atom1), (3, atom2)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 3);
 
         remove_file(&cfg_file);
     }
@@ -558,6 +567,7 @@ mod tests {
         pvms.data[0].atom_mov(atom2, pcore);
         check_atoms(&vec![(1, atom0), (2, atom1), (12, atom2)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 3);
 
         remove_file(&cfg_file);
     }
@@ -586,6 +596,7 @@ mod tests {
         pvms.data[0].atom_mov(atom4, pcore);
         check_atoms(&vec![(12, atom0), (23, atom1), (32, atom2), (21, atom3), (22, atom4)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 12);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 5);
 
         remove_file(&cfg_file);
     }
@@ -607,6 +618,7 @@ mod tests {
         pvms.data[0].atom_mov(atom1, pcore);
         check_atoms(&vec![(0, 0b1001_0010_0010_0110), (11, 0b0010_0011_0100_0000)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 0);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy);
 
         remove_file(&cfg_file);
     }
@@ -629,6 +641,7 @@ mod tests {
         pvms.data[0].atom_mov(atom0, pcore);
         check_atoms(&vec![(11, atom0), (10, 0b1001_0010_0010_0110), (21, 0b1000_0010_0000_0110)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 11);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 2);
 
         remove_file(&cfg_file);
     }
@@ -650,6 +663,7 @@ mod tests {
         pvms.data[0].atom_fix(atom0, pcore);
         check_atoms(&vec![(10, atom0), (1, 0b0110_1110_0000_0000), (2, atom2)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 10);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().fix_energy);
 
         remove_file(&cfg_file);
     }
@@ -671,6 +685,7 @@ mod tests {
         pvms.data[0].atom_fix(atom0, pcore);
         check_atoms(&vec![(10, atom0), (1, 0b1000_1110_0001_1010), (2, atom2)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 10);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().fix_energy);
 
         remove_file(&cfg_file);
     }
@@ -690,6 +705,7 @@ mod tests {
         pvms.data[0].atom_fix(atom0, pcore);
         check_atoms(&vec![(0, atom0), (1, 0b0111_1110_0000_0000)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 0);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().fix_energy);
 
         remove_file(&cfg_file);
     }
@@ -703,12 +719,13 @@ mod tests {
         let atom0 = 0b0100_1111_0111_1000; // fix
         let atom1 = 0b0110_0000_0000_0000; // spl
 
-        // atoms: [f][s]
+        // atoms: [f]-[s]
         pvms.add(VM::new(100, 0));
         set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_fix(atom0, pcore);
         check_atoms(&vec![(0, atom0), (1, atom1)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
+        assert_eq!(pvms.data[0].get_energy(), 100);
 
         remove_file(&cfg_file);
     }
@@ -728,6 +745,28 @@ mod tests {
         pvms.data[0].atom_fix(atom0, pcore);
         check_atoms(&vec![(0, atom0), (1, 0b1001_1110_0011_1010)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 1);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().fix_energy);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_spl() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0110_1110_1101_1000; // spl
+        let atom1 = 0b0010_1110_1100_0000; // mov
+        let atom2 = 0b0010_0000_1100_0000; // mov
+
+        // atoms: [s]-[m][m]
+        pvms.add(VM::new(100, 0));
+        set_atoms(&vec![(0, atom0), (1, atom1), (2, atom2)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_spl(atom0, pcore);
+        check_atoms(&vec![(0, atom0), (1, 0b0010_1100_1100_0000), (2, atom2)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 1);
+        assert_eq!(pvms.data[0].get_energy(), 100 + pcore.cfg.atoms().fix_energy);
 
         remove_file(&cfg_file);
     }

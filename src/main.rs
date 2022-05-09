@@ -31,7 +31,6 @@ mod plugins;
 use log::{*};
 use colored::Colorize;
 use share::cfg::{Config, CONFIG_FILE};
-use share::vm::VM;
 use share::vm::vmdata::VMData;
 use share::dump::Dump;
 use share::utils::vec::Vector;
@@ -122,13 +121,6 @@ fn main() {
     
     plugins.load(cfg.PLUGINS_DIR());
     plugins.init(core);
-
-    // tmp code
-    let atom0 = 0b0100_1111_0111_1000; // fix
-    let atom1 = 0b0110_0000_0000_0000; // if
-    vms.add(VM::new(100, 0));
-    core.vm_data.world.set_atom(0, atom0, &core.io);
-    core.vm_data.world.set_atom(1, atom1, &core.io);
     //
     // Main loop
     //
