@@ -22,17 +22,17 @@ pub struct World {
     ///
     pub height: usize,
     ///
+    /// All possible directions of nearest atoms
+    ///
+    pub dirs: [i32; DIRS_LEN],
+    ///
     /// linear array of dots
     /// 
     cells: Vec<Atom>,
     ///
     /// World size (width * height)
     ///
-    size: usize,
-    ///
-    /// All possible directions of nearest atoms
-    ///
-    pub dirs: [i32; DIRS_LEN]
+    size: usize
 }
 
 impl World {
@@ -49,11 +49,11 @@ impl World {
         utils::zero(&mut mem, 0);
 
         World {
-            cells: mem,
             width,
             height,
-            size,
-            dirs
+            dirs,
+            cells: mem,
+            size
         }
     }
     ///
