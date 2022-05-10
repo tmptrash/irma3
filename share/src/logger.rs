@@ -56,12 +56,12 @@ pub fn init() {
     ($($arg:tt)?) => (
         let _p = $crate::logger::Pad {};
         info!("{}{}", " ".repeat(unsafe { $crate::logger::INDENT }), $($arg)?);
-        unsafe { $crate::logger::INDENT += $crate::logger::LEFT_PADDING }
+        unsafe { $crate::logger::INDENT = $crate::logger::INDENT.wrapping_add($crate::logger::LEFT_PADDING) }
     );
     ($arg0:literal, $($args:tt)+) => (
         let _p = $crate::logger::Pad {};
         info!("{}{}", " ".repeat(unsafe { $crate::logger::INDENT }), format!($arg0, $($args)+));
-        unsafe { $crate::logger::INDENT += $crate::logger::LEFT_PADDING }
+        unsafe { $crate::logger::INDENT = $crate::logger::INDENT.wrapping_add($crate::logger::LEFT_PADDING) }
     );
 }
 ///
