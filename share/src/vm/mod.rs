@@ -304,16 +304,15 @@ impl VM {
     /// should be called from outside, because new VM is added there
     ///
     fn atom_job(&mut self, atom: Atom, core: &mut Core) -> bool {
-        let offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
-        if !is_atom(core.vm_data.world.get_atom(offs)) { return false }
+        let job_offs = core.vm_data.world.get_offs(self.offs, get_dir1(atom));
+        if !core.vm_data.world.is_atom(job_offs) || core.vms.full() { return false }
         let energy = self.energy / 2;
         self.energy -= energy;
-        if !core.vms.full() {
-            core.vms.add(VM::new(energy, offs));
-            return true;
-        }
+        core.vms.add(VM::new(energy, job_offs));
+        let vm_offs = core.vm_data.world.get_offs(self.offs, get_vm_dir(atom));
+        if core.vm_data.world.is_atom(vm_offs) { self.offs = vm_offs }
 
-        false
+        true
     }
     ///
     /// Just a stub for empty atom in a world
@@ -937,6 +936,52 @@ mod tests {
         set_atoms(&vec![(0, atom0)], &mut pvmdata.world, pio, 100);
         pvms.data[0].atom_if(atom0, pcore);
         check_atoms(&vec![(0, atom0)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 0);
+        assert_eq!(pvms.data[0].get_energy(), 100);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_job() {
+        let (cfg_file, core) = init(2);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0110_0000_0000_0000; // spl
+        let atom1 = 0b1010_1111_1100_0000; // job
+        let atom2 = 0b0110_0000_0000_0000; // spl
+
+        // atoms: [s]-[j]-[s]
+        pvms.add(VM::new(100, 1));
+        assert_eq!(pvms.size(), 1);
+        set_atoms(&vec![(0, atom0), (1, atom1), (2, atom2)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_job(atom1, pcore);
+        check_atoms(&vec![(0, atom0), (1, atom1), (2, atom2)], &pvmdata.world, 100);
+        assert_eq!(pvms.size(), 2);
+        assert_eq!(pvms.data[0].get_offs(), 2);
+        assert_eq!(pvms.data[1].get_offs(), 0);
+        assert_eq!(pvms.data[0].get_energy(), 100 / 2);
+        assert_eq!(pvms.data[1].get_energy(), 100 / 2);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_job1() {
+        let (cfg_file, core) = init(2);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b1010_1111_1100_0000; // job
+
+        // atoms: [s]-[j]-[s]
+        pvms.add(VM::new(100, 0));
+        assert_eq!(pvms.size(), 1);
+        set_atoms(&vec![(0, atom0)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_job(atom0, pcore);
+        check_atoms(&vec![(0, atom0)], &pvmdata.world, 100);
+        assert_eq!(pvms.size(), 1);
         assert_eq!(pvms.data[0].get_offs(), 0);
         assert_eq!(pvms.data[0].get_energy(), 100);
 
