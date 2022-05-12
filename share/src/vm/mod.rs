@@ -106,8 +106,31 @@ impl VM {
             moved.insert(to_offs);                                        // mark atom as "already moved"
             self.energy -= mov_energy;                                    // decrease energy for every moved atom
             if self.energy < 0 { return false }                           // no energy to continue
+            // checks atoms around if they have bond to moved except already moved---------------------------------------------
+            if dir % 2 == 0 {                                             // this is speed optimization trick
+                for d in DIR_MOV_DISCONNECTED[dir as I] {                 // go through all near atoms
+                    let atom = wrld.get_dir_atom(offs, d);
+                    if is_atom(atom) {
+                        let rev_dir = get_vm_dir(atom);
+                        if rev_dir == DIR_REV[d as I] || get_type(atom) == ATOM_IF && get_dir2(atom) == DIR_REV[d as I] {
+                            stack.push(wrld.get_offs(offs, d));           // if near atom has a bond with current
+                        }
+                    }
+                }
+            } else {
+                for d in &DIR_MOV_DISCONNECTED[dir as I][0..3] {          // go through all near atoms
+                    let atom = wrld.get_dir_atom(offs, *d);
+                    if is_atom(atom) {
+                        let rev_dir = get_vm_dir(atom);
+                        if rev_dir == DIR_REV[*d as I] || get_type(atom) == ATOM_IF && get_dir2(atom) == DIR_REV[*d as I] {
+                            stack.push(wrld.get_offs(offs, *d));
+                        }
+                    }
+                }
+            }
+
             atom = wrld.get_atom(to_offs);                                // atom we have to move
-            // update vm bond of moved atom---------------------------------------------------------------------------------
+            // update vm bond of moved atom------------------------------------------------------------------------------------
             dir0 = get_vm_dir(atom);                                      // get VM dir of moved atom
             if dir0 != DIR_NO {                                           // there is no near atom
                 dir1 = DIR_MOV_ATOM[dir0 as I][dir as I];                 // final dir of moved atom
@@ -117,7 +140,7 @@ impl VM {
                 } else {
                     set_vm_dir(&mut atom, dir1);                          // distance between atoms is 1. update bond
                     wrld.set_atom(to_offs, atom, &core.io);
-                    // update vm bond of near atom------------------------------------------------------------------------------
+                    // update vm bond of near atom-----------------------------------------------------------------------------
                     dir0 = DIR_REV[dir0 as I];                            // get near atom's dir to moved atom
                     a = wrld.get_atom(o);                                 // near atom
                     if get_vm_dir(a) == dir0 {                            // near atom has vm bond with moved
@@ -134,7 +157,7 @@ impl VM {
                 }
             }
             if get_type(atom) == ATOM_IF {                                // if atom has additional then bond
-                // update then bond of moved atom---------------------------------------------------------------------------
+                // update then bond of moved atom------------------------------------------------------------------------------
                 dir0 = get_dir2(atom);                                      // get then dir of if moved atom
                 if dir0 != DIR_NO {                                       // there is no near atom
                     dir1 = DIR_MOV_ATOM[dir0 as I][dir as I];                 // final dir of if moved atom
@@ -404,6 +427,38 @@ mod tests {
 
         remove_file(&cfg_file);
     }
+    // #[test]
+    // fn test_run_atom_molecule() {
+    //     let (cfg_file, core) = init(2);
+    //     let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+    //     let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+    //     let pio = unsafe{ &mut (*(core as *mut Core)).io };
+    //     let pcore = unsafe{ &mut *(core as *mut Core) };
+    //     let atom0 = 0b1000_1110_0110_1110; // if
+    //     let atom1 = 0b0011_0110_1100_0000; // mov
+    //     let atom2 = 0b0111_1111_0110_1000; // spl
+    //     let atom3 = 0b0111_1111_0110_1000; // fix
+    //     let mut energy = 100;
+
+    //     // atoms: [i]-[m] >
+    //     //         |   |
+    //     //        [f]-[s]
+    //     pvms.add(VM::new(energy, 0));
+    //     set_atoms(&vec![(0, atom0), (1, atom1), (11, atom2), (10, atom3)], &mut pvmdata.world, pio, 100);
+    //     pvms.data[0].run_atom(pcore);
+    //     check_atoms(&vec![(0, atom0), (1, atom1), (11, atom2), (10, atom3)], &pvmdata.world, 100);
+    //     assert_eq!(pvms.data[0].get_offs(), 1);
+    //     energy -= pcore.cfg.atoms().if_energy;
+    //     assert_eq!(pvms.data[0].get_energy(), energy);
+
+    //     pvms.data[0].run_atom(pcore);
+    //     check_atoms(&vec![(1, atom0), (2, atom1), (20, atom2), (10, atom3)], &pvmdata.world, 100);
+    //     assert_eq!(pvms.data[0].get_offs(), 20);
+    //     energy -= pcore.cfg.atoms().mov_energy * 2;
+    //     assert_eq!(pvms.data[0].get_energy(), energy);
+
+    //     remove_file(&cfg_file);
+    // }
     #[test]
     fn test_one_atom_mov() {
         let (cfg_file, core) = init(1);
@@ -640,6 +695,26 @@ mod tests {
         pvms.data[0].atom_mov(atom0, pcore);
         check_atoms(&vec![(11, atom0), (10, 0b1001_0010_0010_0110), (21, 0b1000_0010_0000_0110)], &pvmdata.world, 100);
         assert_eq!(pvms.data[0].get_offs(), 11);
+        assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 2);
+
+        remove_file(&cfg_file);
+    }
+    #[test]
+    fn test_two_atom_mov10() {
+        let (cfg_file, core) = init(1);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b0110_1110_0000_0000; // spl
+        let atom1 = 0b0010_0000_1100_0000; // mov
+
+        // atoms:     [s]-[m]
+        pvms.add(VM::new(100, 1));
+        set_atoms(&vec![(0, atom0), (1, atom1)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].atom_mov(atom1, pcore);
+        check_atoms(&vec![(1, atom0), (2, atom1)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 2);
         assert_eq!(pvms.data[0].get_energy(), 100 - pcore.cfg.atoms().mov_energy * 2);
 
         remove_file(&cfg_file);
@@ -975,7 +1050,7 @@ mod tests {
         let pcore = unsafe{ &mut *(core as *mut Core) };
         let atom0 = 0b1010_1111_1100_0000; // job
 
-        // atoms: [s]-[j]-[s]
+        // atoms: [j]
         pvms.add(VM::new(100, 0));
         assert_eq!(pvms.size(), 1);
         set_atoms(&vec![(0, atom0)], &mut pvmdata.world, pio, 100);

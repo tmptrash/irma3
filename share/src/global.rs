@@ -143,3 +143,17 @@ pub const DIR_NEAR_ATOM: [[Dir; DIRS_LEN]; DIRS_LEN] = [
     [DIR_NO,      7, DIR_NO,      5, DIR_NO, DIR_NO, DIR_NO, DIR_NO],
     [DIR_NO,      0,      1, DIR_NO,      5,      6, DIR_NO, DIR_NO]
 ];
+///
+/// Directions maps for checking possible near atoms which may have a
+/// bond with current. We use this map in "mov" atom
+///
+pub const DIR_MOV_DISCONNECTED: [[Dir; 5]; DIRS_LEN] = [
+    [2, 3, 4, 5, 6],
+    [6, 5, 4, DIR_NO, DIR_NO],
+    [0, 7, 6, 5, 4],
+    [0, 7, 6, DIR_NO, DIR_NO],
+    [6, 7, 0, 1, 2],
+    [0, 1, 2, DIR_NO, DIR_NO],
+    [0, 1, 2, 3, 4],
+    [2, 3, 4, DIR_NO, DIR_NO]
+];
