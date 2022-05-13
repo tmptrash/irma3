@@ -427,38 +427,43 @@ mod tests {
 
         remove_file(&cfg_file);
     }
-    // #[test]
-    // fn test_run_atom_molecule() {
-    //     let (cfg_file, core) = init(2);
-    //     let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
-    //     let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
-    //     let pio = unsafe{ &mut (*(core as *mut Core)).io };
-    //     let pcore = unsafe{ &mut *(core as *mut Core) };
-    //     let atom0 = 0b1000_1110_0110_1110; // if
-    //     let atom1 = 0b0011_0110_1100_0000; // mov
-    //     let atom2 = 0b0111_1111_0110_1000; // spl
-    //     let atom3 = 0b0111_1111_0110_1000; // fix
-    //     let mut energy = 100;
+    #[test]
+    fn test_run_atom_molecule() {
+        let (cfg_file, core) = init(2);
+        let pvms = unsafe{ &mut (*(core as *mut Core)).vms };
+        let pvmdata = unsafe{ &mut (*(core as *mut Core)).vm_data };
+        let pio = unsafe{ &mut (*(core as *mut Core)).io };
+        let pcore = unsafe{ &mut *(core as *mut Core) };
+        let atom0 = 0b1000_1110_0110_1110; // if
+        let atom1 = 0b0011_0110_1100_0000; // mov
+        let atom2 = 0b0111_1111_0110_1000; // spl
+        let atom3 = 0b0111_1111_0110_1000; // fix
+        let mut energy = 100;
 
-    //     // atoms: [i]-[m] >
-    //     //         |   |
-    //     //        [f]-[s]
-    //     pvms.add(VM::new(energy, 0));
-    //     set_atoms(&vec![(0, atom0), (1, atom1), (11, atom2), (10, atom3)], &mut pvmdata.world, pio, 100);
-    //     pvms.data[0].run_atom(pcore);
-    //     check_atoms(&vec![(0, atom0), (1, atom1), (11, atom2), (10, atom3)], &pvmdata.world, 100);
-    //     assert_eq!(pvms.data[0].get_offs(), 1);
-    //     energy -= pcore.cfg.atoms().if_energy;
-    //     assert_eq!(pvms.data[0].get_energy(), energy);
+        // atoms: [i]-[m] >
+        //         |   |
+        //        [f]-[s]
+        pvms.add(VM::new(energy, 0));
+        set_atoms(&vec![(0, atom0), (1, atom1), (11, atom2), (10, atom3)], &mut pvmdata.world, pio, 100);
+        pvms.data[0].run_atom(pcore);
+        check_atoms(&vec![(0, atom0), (1, atom1), (11, atom2), (10, atom3)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 1);
+        energy -= pcore.cfg.atoms().if_energy;
+        assert_eq!(pvms.data[0].get_energy(), energy);
 
-    //     pvms.data[0].run_atom(pcore);
-    //     check_atoms(&vec![(1, atom0), (2, atom1), (20, atom2), (10, atom3)], &pvmdata.world, 100);
-    //     assert_eq!(pvms.data[0].get_offs(), 20);
-    //     energy -= pcore.cfg.atoms().mov_energy * 2;
-    //     assert_eq!(pvms.data[0].get_energy(), energy);
+        pvms.data[0].run_atom(pcore);
+        check_atoms(&vec![(1, 0b1000_1110_0111_0110), (2, 0b0011_1010_1100_0000), (11, atom2), (10, atom3)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 11);
+        energy -= pcore.cfg.atoms().mov_energy * 2;
+        assert_eq!(pvms.data[0].get_energy(), energy);
 
-    //     remove_file(&cfg_file);
-    // }
+        pvms.data[0].run_atom(pcore);
+        check_atoms(&vec![(1, 0b1000_1110_0111_0110), (2, 0b0011_1010_1100_0000), (11, atom2), (10, atom3)], &pvmdata.world, 100);
+        assert_eq!(pvms.data[0].get_offs(), 10);
+        assert_eq!(pvms.data[0].get_energy(), energy);
+
+        remove_file(&cfg_file);
+    }
     #[test]
     fn test_one_atom_mov() {
         let (cfg_file, core) = init(1);
