@@ -111,10 +111,10 @@ mod tests {
     }
     #[test]
     fn test_to_offs() {
-        let cfg_file = "def.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         assert_eq!(to_offs(0, 0, &cfg), 0);
         assert_eq!(to_offs(1, 0, &cfg), 1);
         assert_eq!(to_offs(1, 1, &cfg), 11);
@@ -122,14 +122,14 @@ mod tests {
         assert_eq!(to_offs(9, 0, &cfg), 9);
         assert_eq!(to_offs(9, 9, &cfg), 99);
 
-        remove_file(cfg_file);
+        remove_file(&cfg_file);
     }
     #[test]
     fn test_to_xy() {
-        let cfg_file = "def1.json";
-        create_file(cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
+        let cfg_file = id() + ".json";
+        create_file(&cfg_file, r#"{"WIDTH": 10, "HEIGHT": 10}"#);
 
-        let cfg = Config::new(cfg_file);
+        let cfg = Config::new(&cfg_file);
         assert_eq!(to_xy(0, &cfg), (0, 0));
         assert_eq!(to_xy(1, &cfg), (1, 0));
         assert_eq!(to_xy(11, &cfg), (1, 1));
@@ -137,6 +137,6 @@ mod tests {
         assert_eq!(to_xy(9, &cfg), (9, 0));
         assert_eq!(to_xy(99, &cfg), (9, 9));
 
-        remove_file(cfg_file);
+        remove_file(&cfg_file);
     }
 }

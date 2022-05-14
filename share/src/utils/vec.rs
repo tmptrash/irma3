@@ -12,7 +12,8 @@
 //!     while i < v.size() {
 //!         ...
 //!         i += 1;
-//!     } 
+//!     }
+//!  The position of elements may be changed during it's lifetime
 //!
 use crate::utils;
 
