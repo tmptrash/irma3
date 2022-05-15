@@ -6,8 +6,6 @@ This is actually fourth ([first](https://github.com/tmptrash/jevo), [second](htt
 
 From the technical perspective, irma4 is a stand alone [Rust](https://www.rust-lang.org/) console application (it's also possible to use other languages (like JavaScript) for tools like organisms editor). It uses [microkernel](https://en.wikipedia.org/wiki/Microkernel) architecture with a possibility to extend functionality with plugins ([dynamic libraries](https://en.wikipedia.org/wiki/Dynamic-link_library)). Planned plugins are: visualization, user terminal, distributed system and statistics. We also have a plan to implement distributed calculations by adding separate processes (separate nodes of the network) to compute more world areas.
 
-You may find more high level overview of the project [here](https://github.com/tmptrash/irma4/wiki/Project-overview).
-
 There are few goals we are looking for:
 
 - Create minimal physics for virtual life
