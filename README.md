@@ -16,7 +16,7 @@ There are few goals we are looking for:
 - Obtain increasing complexity of organisms
 - Just run and check what will be
 
-For more details look at [this](https://github.com/tmptrash/irma4/wiki/Project-overview) description and developer [document](https://docs.google.com/document/d/1I4wnmFnxpCtH4gmAgwguqrFmK4xMWq0tq7pvmjfqguU/edit#).
+For more details look at [this](https://github.com/tmptrash/irma4/wiki/Project-overview) description and [this](https://docs.google.com/document/d/1I4wnmFnxpCtH4gmAgwguqrFmK4xMWq0tq7pvmjfqguU/edit#) developer document.
 
 ### How to run
 
