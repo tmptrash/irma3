@@ -93,6 +93,14 @@ pub struct Config {
     ///
     pub frame_delay: u32,
     ///
+    /// Zoom coefficient 0..xx. Bigger value - slower zoom
+    ///
+    pub zoom: i64,
+    ///
+    /// Shift distance per one click
+    ///
+    pub shift: i64,
+    ///
     /// Amount of energy for moving one atom to one dot
     ///
     pub atoms: AtomConfig
@@ -134,6 +142,8 @@ impl Config {
             is_running: Config::to_bool(&cfg["is_running"], false),
             stopped: Config::to_bool(&cfg["stopped"], false),
             frame_delay: Config::to_i64(&cfg["frame_delay"], 0) as u32,
+            zoom: Config::to_i64(&cfg["zoom"], 1),
+            shift: Config::to_i64(&cfg["shift"], 10),
             atoms: AtomConfig {
                 mov_energy: Config::to_i64(&cfg["mov_energy"], 1) as isize,
                 fix_energy: Config::to_i64(&cfg["fix_energy"], 1) as isize,

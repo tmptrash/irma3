@@ -1,7 +1,7 @@
 //!
 //! Module of definitions for GUI plugin
 //! 
-use piston_window::{PistonWindow, TextureContext, G2dTexture};
+use piston_window::{PistonWindow, TextureContext, G2dTexture, types::Scalar};
 use image as im;
 ///
 /// Black color for no atom or empty cell
@@ -12,9 +12,9 @@ pub const BLACK_COLOR_U8: im::Rgba<u8> = im::Rgba([0, 0, 0, 0]);
 ///
 pub const ATOM_COLORS: [im::Rgba<u8>; 8] = [
     BLACK_COLOR_U8,                            // no atom | empty cell | black pixel
-    im::Rgba([250, 0,   0,   255]),            // mov atom
+    im::Rgba([0,   0,   250, 255]),            // mov atom
     im::Rgba([0,   250, 0,   255]),            // fix atom
-    im::Rgba([0,   0,   250, 255]),            // spl atom
+    im::Rgba([250, 0,   0,   255]),            // spl atom
     im::Rgba([0,   150, 250, 255]),            // if atom
     im::Rgba([150, 0,   150, 255]),            // job atom
     BLACK_COLOR_U8,                            // no atom | empty cell | black pixel
@@ -37,5 +37,8 @@ pub struct Gui {
         gfx_device_gl::Resources,
         gfx_device_gl::CommandBuffer>,
     pub texture: G2dTexture,                   // GL texture to draw on
-    pub zoom: f64                              // zoom coefficient
+    pub zoom: Scalar,                          // zoom coefficient
+    pub shift_x: Scalar,                       // shift horizontally
+    pub shift_y: Scalar,                       // shift vertically
+    pub mouse_pos: [f64; 2]                    // current mouse x,y
 }
