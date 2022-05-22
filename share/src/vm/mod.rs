@@ -137,7 +137,7 @@ impl VM {
                 o = wrld.get_offs(offs, dir0);                            // offs of near atom
                 if dir1 == DIR_NO {                                       // near atom is to far, will add it later
                     if wrld.is_atom(o) && dir != dir0 { stack.push(o); }
-                } else {
+                } else if wrld.is_atom(wrld.get_offs(to_offs, dir1)) {    // change vm bond only if near atom is exist
                     set_vm_dir(&mut atom, dir1);                          // distance between atoms is 1. update bond
                     wrld.set_atom(to_offs, atom, &core.io);
                     // update vm bond of near atom-----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ impl VM {
                     o  = wrld.get_offs(offs, dir0);                     // offs of near atom
                     if dir1 == DIR_NO {                                   // near atom is to far, will add it later
                         if wrld.is_atom(o) && dir != dir0 { stack.push(o); }
-                    } else {
+                    } else if wrld.is_atom(wrld.get_offs(to_offs, dir1)) {// change then bond only if near atom is exist
                         set_dir2(&mut atom, dir1);                      // distance between atoms is 1. update bond
                         wrld.set_atom(to_offs, atom, &core.io);
                         // update then bond of near atom------------------------------------------------------------------------
