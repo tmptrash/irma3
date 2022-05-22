@@ -79,7 +79,7 @@ fn init() {
             vm_data: VMData::new(width, height, dir2offs, mov_buf_size)
         })).cast()
     }
-    
+
     inf!("Init core API");
     io!().on(EVENT_RUN, |_| {
         dbg!("\"Run\" command catched");
