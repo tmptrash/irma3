@@ -85,8 +85,8 @@ impl World {
     ///
     pub fn get_offs(&self, offs: Offs, dir: Dir) -> Offs {
         let offs = offs + self.dirs[dir as I] as Offs;
-        if offs < 0 { return self.size as Offs - 1 }
-        else if offs >= self.size as Offs { return 0 }
+        if offs < 0 { return self.size as Offs + offs }
+        else if offs >= self.size as Offs { return offs - self.size as Offs }
         offs
     }
     ///
